@@ -27,6 +27,8 @@ void main() {
 
     expect(find.text('Halo, Siswa!'), findsOneWidget);
     expect(find.text('Progress Jurnal'), findsOneWidget);
+    expect(find.text('Pengingat belum tersedia'), findsOneWidget);
+    expect(find.text('Isi Jurnal'), findsNothing);
   });
 
   testWidgets('login dengan password salah menampilkan pesan error', (

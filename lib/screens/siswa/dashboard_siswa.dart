@@ -64,6 +64,8 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
               style: TextStyle(color: AppTheme.muted),
             ),
             const SizedBox(height: 20),
+            _buildReminderCard(),
+            const SizedBox(height: 16),
             _buildProgressCard(),
             const SizedBox(height: 16),
             _buildStatusSummary(),
@@ -101,6 +103,40 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
             ..._jurnals.map((journal) => _buildJournalTile(context, journal)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildReminderCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.outline),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.calendar_today_outlined, color: AppTheme.accent, size: 20),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Pengingat belum tersedia',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Jadwal PKL dan jurnal akun siswa belum terhubung, jadi kewajiban hari ini belum dapat ditentukan.',
+                  style: TextStyle(fontSize: 12, color: AppTheme.muted),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

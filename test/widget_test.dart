@@ -91,7 +91,7 @@ void main() {
       ('Kelola User', 'Kelola User'),
       ('Kelola Kelas', 'Kelola Kelas'),
       ('Data Jurnal', 'Data Jurnal'),
-      ('Statistik', 'Statistik'),
+      ('Statistik', 'Statistik PKL'),
       ('Laporan', 'Laporan Kegiatan Siswa'),
     ]) {
       await tester.ensureVisible(find.text(menu.$1).first);

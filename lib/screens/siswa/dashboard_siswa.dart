@@ -16,7 +16,6 @@ class DashboardSiswa extends StatefulWidget {
 }
 
 class _DashboardSiswaState extends State<DashboardSiswa> {
-  static const Color _blue = AppTheme.accent;
   late List<JurnalModel> _jurnals;
 
   @override
@@ -107,47 +106,38 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
   }
 
   Widget _buildProgressCard() {
-    final progress = (_jurnals.length / 5).clamp(0.0, 1.0).toDouble();
-
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          const Row(
             children: [
-              const Text(
+              Icon(Icons.info_outline, size: 20, color: AppTheme.accent),
+              SizedBox(width: 8),
+              Text(
                 'Progress Jurnal',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
-              Text(
-                '${_jurnals.length} jurnal',
-                style: const TextStyle(
-                  color: _blue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ],
           ),
-          const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 9,
-              backgroundColor: AppTheme.progressTrack,
-              color: _blue,
+          const SizedBox(height: 8),
+          const Text(
+            'Belum tersedia',
+            style: TextStyle(
+              color: AppTheme.accent,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            '${_jurnals.length} dari 5 jurnal',
-            style: const TextStyle(fontSize: 12, color: AppTheme.muted),
+          const SizedBox(height: 4),
+          const Text(
+            'Data jurnal belum terhubung ke akun siswa. Progres belum dapat dihitung.',
+            style: TextStyle(fontSize: 12, color: AppTheme.muted),
           ),
         ],
       ),

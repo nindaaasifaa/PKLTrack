@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/jurnal_model.dart';
+import '../../services/jadwal_pkl_service.dart';
 import '../../services/jurnal_service.dart';
 import '../../theme/app_theme.dart';
 import 'detail_jurnal.dart';
@@ -108,6 +109,8 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
   }
 
   Widget _buildReminderCard() {
+    final isPklDay = JadwalPklService.isHariWajib(DateTime.now());
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -115,22 +118,28 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTheme.outline),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.calendar_today_outlined, color: AppTheme.accent, size: 20),
-          SizedBox(width: 10),
+          const Icon(
+            Icons.calendar_today_outlined,
+            color: AppTheme.accent,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Pengingat belum tersedia',
+                const Text(
+                  'Pengingat Jurnal',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Jadwal PKL dan jurnal akun siswa belum terhubung, jadi kewajiban hari ini belum dapat ditentukan.',
+                  isPklDay
+                      ? 'Hari ini jadwal PKL. Status jurnal akunmu belum dapat diperiksa karena data belum terhubung.'
+                      : 'Hari ini di luar jadwal PKL. Pengingat berlaku Senin sampai Jumat.',
                   style: TextStyle(fontSize: 12, color: AppTheme.muted),
                 ),
               ],

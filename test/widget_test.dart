@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_1/main.dart';
+import 'package:flutter_application_1/services/jadwal_pkl_service.dart';
 
 void main() {
+  test('jadwal pengisian berlaku Senin sampai Jumat', () {
+    expect(JadwalPklService.isHariWajib(DateTime(2026, 10, 5)), isTrue);
+    expect(JadwalPklService.isHariWajib(DateTime(2026, 10, 9)), isTrue);
+    expect(JadwalPklService.isHariWajib(DateTime(2026, 10, 10)), isFalse);
+    expect(JadwalPklService.isHariWajib(DateTime(2026, 10, 11)), isFalse);
+  });
+
   testWidgets('aplikasi dimulai pada halaman login', (
     WidgetTester tester,
   ) async {
@@ -27,7 +35,7 @@ void main() {
 
     expect(find.text('Halo, Siswa!'), findsOneWidget);
     expect(find.text('Progress Jurnal'), findsOneWidget);
-    expect(find.text('Pengingat belum tersedia'), findsOneWidget);
+    expect(find.text('Pengingat Jurnal'), findsOneWidget);
     expect(find.text('Isi Jurnal'), findsNothing);
   });
 

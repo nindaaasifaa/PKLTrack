@@ -148,6 +148,46 @@ void main() {
     expect(find.text('Dashboard Admin'), findsNothing);
   });
 
+  testWidgets('admin dapat membuka rincian dari setiap kartu statistik', (
+    WidgetTester tester,
+  ) async {
+    await _openLogin(tester);
+    await _loginAsAdmin(tester);
+
+    await tester.ensureVisible(find.text('Statistik').first);
+    await tester.tap(find.text('Statistik').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Jumlah Siswa'));
+    await tester.pumpAndSettle();
+    expect(find.text('Daftar Siswa'), findsOneWidget);
+    expect(find.text('Siswa RPL 1'), findsOneWidget);
+    await tester.tap(find.byTooltip('Tutup'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Jumlah Guru'));
+    await tester.pumpAndSettle();
+    expect(find.text('Daftar Guru'), findsOneWidget);
+    expect(find.text('Bapak/Ibu Guru'), findsOneWidget);
+    await tester.tap(find.byTooltip('Tutup'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Jumlah Kelas'));
+    await tester.pumpAndSettle();
+    expect(find.text('Rincian Kelas'), findsOneWidget);
+    expect(find.text('2 siswa • 2 jurnal'), findsOneWidget);
+    await tester.tap(find.byTooltip('Tutup'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Total Jurnal Kegiatan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Daftar Jurnal Kegiatan'), findsOneWidget);
+    expect(
+      find.text('Membantu pemeriksaan perangkat komputer'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('guru dapat memvalidasi jurnal dan menyimpan komentar', (
     WidgetTester tester,
   ) async {

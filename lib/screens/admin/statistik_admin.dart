@@ -56,11 +56,69 @@ class _StatistikAdminState extends State<StatistikAdmin> {
   Widget build(BuildContext context) {
     final users = AdminDataService.users;
     final journals = JurnalService.semuaJurnal;
+    final students = users.where((user) => user.role == 'siswa').toList();
+    final teachers = users.where((user) => user.role == 'guru').toList();
     final stats = [
-      ('Jumlah Siswa', users.where((user) => user.role == 'siswa').length, Icons.school_outlined),
-      ('Jumlah Guru', users.where((user) => user.role == 'guru').length, Icons.co_present_outlined),
-      ('Jumlah Kelas', AdminDataService.kelas.length, Icons.class_outlined),
-      ('Total Jurnal Kegiatan', journals.length, Icons.menu_book_outlined),
+      (
+        'Jumlah Siswa',
+        students.length,
+        Icons.school_outlined,
+        () => _showStatDetails(
+          context,
+          title: 'Daftar Siswa',
+          items: [
+            for (final student in students)
+              (
+                student.name,
+                '${student.username} • ${student.className ?? 'Kelas belum ditentukan'}',
+              ),
+          ],
+        ),
+      ),
+      (
+        'Jumlah Guru',
+        teachers.length,
+        Icons.co_present_outlined,
+        () => _showStatDetails(
+          context,
+          title: 'Daftar Guru',
+          items: [
+            for (final teacher in teachers) (teacher.name, teacher.username),
+          ],
+        ),
+      ),
+      (
+        'Jumlah Kelas',
+        AdminDataService.kelas.length,
+        Icons.class_outlined,
+        () => _showStatDetails(
+          context,
+          title: 'Rincian Kelas',
+          items: [
+            for (final className in AdminDataService.kelas)
+              (
+                className,
+                '${students.where((student) => student.className == className).length} siswa • ${journals.where((journal) => (journal.className ?? AdminDataService.classForStudent(journal.studentName)) == className).length} jurnal',
+              ),
+          ],
+        ),
+      ),
+      (
+        'Total Jurnal Kegiatan',
+        journals.length,
+        Icons.menu_book_outlined,
+        () => _showStatDetails(
+          context,
+          title: 'Daftar Jurnal Kegiatan',
+          items: [
+            for (final journal in journals)
+              (
+                journal.activity,
+                '${journal.date} • ${journal.studentName} • ${journal.className ?? AdminDataService.classForStudent(journal.studentName) ?? 'Kelas tidak diketahui'} • ${journal.status}',
+              ),
+          ],
+        ),
+      ),
     ];
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -91,6 +149,7 @@ class _StatistikAdminState extends State<StatistikAdmin> {
                     title: stats[index].$1,
                     value: stats[index].$2,
                     icon: stats[index].$3,
+                    onTap: stats[index].$4,
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -130,6 +189,87 @@ class _StatistikAdminState extends State<StatistikAdmin> {
                   ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showStatDetails(
+    BuildContext context, {
+    required String title,
+    required List<(String, String)> items,
+  }) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.68,
+        minChildSize: 0.35,
+        maxChildSize: 0.92,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 38,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD0D5DD),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 12, 14),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: _ink,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Tutup',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: items.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Belum ada data untuk ditampilkan.',
+                          style: TextStyle(color: _muted),
+                        ),
+                      )
+                    : ListView.separated(
+                        controller: scrollController,
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                        itemCount: items.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1, color: _line),
+                        itemBuilder: (context, index) => _StatDetailRow(
+                          title: items[index].$1,
+                          subtitle: items[index].$2,
+                        ),
+                      ),
+              ),
+            ],
           ),
         ),
       ),
@@ -183,60 +323,121 @@ class _SummaryCard extends StatelessWidget {
     required this.title,
     required this.value,
     required this.icon,
+    required this.onTap,
   });
 
   final String title;
   final int value;
   final IconData icon;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: Colors.white,
+  Widget build(BuildContext context) => Material(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    child: InkWell(
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: _StatistikAdminState._line),
-      boxShadow: const [
-        BoxShadow(color: Color(0x080D1B2A), blurRadius: 12, offset: Offset(0, 4)),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: const Color(0xFFEAF2FC),
-            borderRadius: BorderRadius.circular(9),
-          ),
-          child: Icon(icon, color: _StatistikAdminState._blue, size: 20),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$value',
-              style: const TextStyle(
-                color: _StatistikAdminState._ink,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                height: 1.1,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: _StatistikAdminState._muted,
-                fontSize: 12,
-                height: 1.25,
-              ),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _StatistikAdminState._line),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x080D1B2A),
+              blurRadius: 12,
+              offset: Offset(0, 4),
             ),
           ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAF2FC),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: _StatistikAdminState._blue,
+                    size: 20,
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: _StatistikAdminState._muted,
+                  size: 20,
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$value',
+                  style: const TextStyle(
+                    color: _StatistikAdminState._ink,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _StatistikAdminState._muted,
+                    fontSize: 12,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _StatDetailRow extends StatelessWidget {
+  const _StatDetailRow({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 13),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: _StatistikAdminState._ink,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: const TextStyle(
+            color: _StatistikAdminState._muted,
+            fontSize: 12,
+            height: 1.4,
+          ),
         ),
       ],
     ),
@@ -264,7 +465,10 @@ class _SectionHeading extends StatelessWidget {
       const SizedBox(height: 4),
       Text(
         subtitle,
-        style: const TextStyle(color: _StatistikAdminState._muted, fontSize: 13),
+        style: const TextStyle(
+          color: _StatistikAdminState._muted,
+          fontSize: 13,
+        ),
       ),
     ],
   );
@@ -319,8 +523,9 @@ class _MonthlyJournalChart extends StatelessWidget {
           }).length,
         )
         .toList(growable: false);
-    final maxY = (counts.reduce((first, second) => first > second ? first : second) + 1)
-        .toDouble();
+    final maxY =
+        (counts.reduce((first, second) => first > second ? first : second) + 1)
+            .toDouble();
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -329,7 +534,11 @@ class _MonthlyJournalChart extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _StatistikAdminState._line),
         boxShadow: const [
-          BoxShadow(color: Color(0x080D1B2A), blurRadius: 12, offset: Offset(0, 4)),
+          BoxShadow(
+            color: Color(0x080D1B2A),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -380,10 +589,8 @@ class _MonthlyJournalChart extends StatelessWidget {
                 gridData: FlGridData(
                   drawVerticalLine: false,
                   horizontalInterval: maxY <= 4 ? 1 : (maxY / 4).ceilToDouble(),
-                  getDrawingHorizontalLine: (_) => FlLine(
-                    color: const Color(0xFFEDF1F6),
-                    strokeWidth: 1,
-                  ),
+                  getDrawingHorizontalLine: (_) =>
+                      FlLine(color: const Color(0xFFEDF1F6), strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
@@ -502,7 +709,11 @@ class _ClassJournalCount extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _StatistikAdminState._line),
         boxShadow: const [
-          BoxShadow(color: Color(0x080D1B2A), blurRadius: 12, offset: Offset(0, 4)),
+          BoxShadow(
+            color: Color(0x080D1B2A),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: Column(

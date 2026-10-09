@@ -8,16 +8,22 @@ class JurnalService {
       date: '30 September 2026',
       activity: 'Membantu pemeriksaan perangkat komputer',
       status: 'Pending',
+      studentName: 'Siswa RPL 1',
+      className: 'RPL',
     ),
     const JurnalModel(
       date: '29 September 2026',
       activity: 'Merapikan dokumentasi kegiatan kantor',
       status: 'Disetujui',
+      studentName: 'Siswa RPL 2',
+      className: 'RPL',
     ),
     const JurnalModel(
       date: '28 September 2026',
       activity: 'Mempelajari prosedur pelayanan pelanggan',
       status: 'Ditolak',
+      studentName: 'Siswa TKJ 1',
+      className: 'TKJ',
     ),
   ];
 
@@ -38,6 +44,7 @@ class JurnalService {
       activity: jurnal.activity,
       status: status,
       studentName: jurnal.studentName,
+      className: jurnal.className,
       imagePath: jurnal.imagePath,
       comment: comment,
     );

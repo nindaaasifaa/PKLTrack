@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_1/main.dart';
 
 void main() {
-  testWidgets('aplikasi dimulai pada halaman login', (WidgetTester tester) async {
+  testWidgets('aplikasi dimulai pada halaman login', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const PKLTrackApp());
 
     expect(find.text('PKLTrack'), findsOneWidget);
@@ -73,6 +75,77 @@ void main() {
     expect(find.text('Progress Pengisian Jurnal'), findsOneWidget);
     expect(find.text('Lihat & Validasi'), findsWidgets);
     expect(find.byTooltip('Profil Guru'), findsOneWidget);
+  });
+
+  testWidgets('admin dapat membuka menu dan memfilter laporan jurnal', (
+    WidgetTester tester,
+  ) async {
+    await _openLogin(tester);
+    await _loginAsAdmin(tester);
+
+    expect(find.text('Dashboard Admin'), findsOneWidget);
+    expect(find.text('Halo, Admin PKL'), findsOneWidget);
+    expect(find.text('Admin / Staf TIK'), findsOneWidget);
+
+    for (final menu in [
+      ('Kelola User', 'Kelola User'),
+      ('Kelola Kelas', 'Kelola Kelas'),
+      ('Data Jurnal', 'Data Jurnal'),
+      ('Statistik', 'Statistik'),
+      ('Laporan', 'Laporan Kegiatan Siswa'),
+    ]) {
+      await tester.ensureVisible(find.text(menu.$1).first);
+      await tester.tap(find.text(menu.$1).first);
+      await tester.pumpAndSettle();
+      expect(find.text(menu.$2), findsWidgets);
+      if (menu.$1 == 'Data Jurnal') {
+        expect(find.text('Setujui'), findsNothing);
+        expect(find.text('Tolak'), findsNothing);
+        expect(find.text('Validasi'), findsNothing);
+        expect(find.text('Lihat & Validasi'), findsNothing);
+      }
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+    }
+
+    await tester.ensureVisible(find.text('Laporan').first);
+    await tester.tap(find.text('Laporan').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButton<String?>).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('TKJ').last);
+    await tester.pumpAndSettle();
+    expect(find.text('1 kegiatan'), findsOneWidget);
+    expect(find.text('Siswa RPL 1'), findsNothing);
+
+    await tester.tap(find.byType(DropdownButton<String?>).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Siswa TKJ 1').last);
+    await tester.pumpAndSettle();
+    expect(find.text('1 kegiatan'), findsOneWidget);
+    expect(
+      find.textContaining('Mempelajari prosedur pelayanan pelanggan'),
+      findsOneWidget,
+    );
+    expect(find.text('Siswa TKJ 2'), findsNothing);
+    expect(find.text('Cetak Laporan'), findsOneWidget);
+    expect(find.text('Export PDF'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Profil'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Logout'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Logout'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('LOGIN'), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('LOGIN'), findsOneWidget);
+    expect(find.text('Dashboard Admin'), findsNothing);
   });
 
   testWidgets('guru dapat memvalidasi jurnal dan menyimpan komentar', (
@@ -156,6 +229,13 @@ Future<void> _openLogin(WidgetTester tester) async {
 Future<void> _loginAsGuru(WidgetTester tester) async {
   await tester.enterText(find.byType(TextField).at(0), 'guru');
   await tester.enterText(find.byType(TextField).at(1), 'guru123');
+  await tester.tap(find.text('LOGIN'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _loginAsAdmin(WidgetTester tester) async {
+  await tester.enterText(find.byType(TextField).at(0), 'admin');
+  await tester.enterText(find.byType(TextField).at(1), 'admin123');
   await tester.tap(find.text('LOGIN'));
   await tester.pumpAndSettle();
 }

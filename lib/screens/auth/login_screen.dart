@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../models/user_model.dart';
+import '../admin/dashboard_admin.dart';
 import '../guru/dashboard_guru.dart';
 import '../siswa/dashboard_siswa.dart';
 
@@ -20,6 +22,10 @@ class _LoginScreenState extends State<LoginScreen> {
     'guru': _DemoAccount(
       password: 'guru123',
       user: UserModel(name: 'Bapak/Ibu Guru', username: 'guru', role: 'guru'),
+    ),
+    'admin': _DemoAccount(
+      password: 'admin123',
+      user: UserModel(name: 'Admin PKL', username: 'admin', role: 'admin'),
     ),
   };
 
@@ -41,9 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Username dan password wajib diisi'),
-        ),
+        const SnackBar(content: Text('Username dan password wajib diisi')),
       );
       return;
     }
@@ -51,9 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final account = _demoAccounts[username];
     if (account == null || password != account.password) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Username atau password salah'),
-        ),
+        const SnackBar(content: Text('Username atau password salah')),
       );
       return;
     }
@@ -61,7 +63,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final dashboard = _dashboardForUser(account.user);
     if (dashboard == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dashboard untuk role ini belum tersedia')),
+        const SnackBar(
+          content: Text('Dashboard untuk role ini belum tersedia'),
+        ),
       );
       return;
     }
@@ -78,6 +82,8 @@ class _LoginScreenState extends State<LoginScreen> {
         return const DashboardSiswa();
       case 'guru':
         return DashboardGuru(user: user);
+      case 'admin':
+        return DashboardAdmin(user: user);
       default:
         return null;
     }
@@ -87,138 +93,138 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                // Logo
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1565C0),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.menu_book_rounded,
-                    color: Colors.white,
-                    size: 42,
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Judul
-                const Text(
-                  'PKLTrack',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1565C0),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                const Text(
-                  'Jurnal Kegiatan PKL Siswa',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey,
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-
-                // Username
-                TextField(
-                  controller: usernameController,
-                  decoration: InputDecoration(
-                    labelText: 'Username',
-                    hintText: 'Masukkan username',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  // Logo
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1565C0),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Password
-                TextField(
-                  controller: passwordController,
-                  obscureText: !isPasswordVisible,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'Masukkan password',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          isPasswordVisible = !isPasswordVisible;
-                        });
-                      },
+                    child: const Icon(
+                      Icons.menu_book_rounded,
+                      color: Colors.white,
+                      size: 42,
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
                   ),
-                ),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Tombol Login
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
+                  // Judul
+                  const Text(
+                    'PKLTrack',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1565C0),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    'Jurnal Kegiatan PKL Siswa',
+                    style: TextStyle(fontSize: 15, color: Colors.grey),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Username
+                  TextField(
+                    controller: usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      hintText: 'Masukkan username',
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      filled: true,
+                      fillColor: Colors.white,
                     ),
-                    child: const Text(
-                      'LOGIN',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Password
+                  TextField(
+                    controller: passwordController,
+                    obscureText: !isPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      hintText: 'Masukkan password',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Tombol Login
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1565C0),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'LOGIN',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 12),
-                const Text(
-                  'Demo siswa: siswa / 123456  |  guru: guru / guru123',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  'PKLTrack - Jurnal Kegiatan PKL Siswa',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Demo siswa: siswa / 123456  |  guru: guru / guru123',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    'PKLTrack - Jurnal Kegiatan PKL Siswa',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

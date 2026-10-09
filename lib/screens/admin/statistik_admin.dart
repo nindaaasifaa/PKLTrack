@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 
 import '../../services/admin_data_service.dart';
 import '../../services/jurnal_service.dart';
+import '../../theme/app_theme.dart';
 
 class StatistikAdmin extends StatefulWidget {
   const StatistikAdmin({super.key});
@@ -12,10 +13,16 @@ class StatistikAdmin extends StatefulWidget {
 }
 
 class _StatistikAdminState extends State<StatistikAdmin> {
-  static const Color _blue = Color(0xFF1565C0);
-  static const Color _ink = Color(0xFF172B4D);
-  static const Color _muted = Color(0xFF667085);
-  static const Color _line = Color(0xFFE6EBF2);
+  static const Color _header = AppTheme.primary;
+  static const Color _accent = AppTheme.accent;
+  static const Color _surface = AppTheme.surface;
+  static const Color _background = AppTheme.background;
+  static const Color _ink = AppTheme.onSurface;
+  static const Color _muted = AppTheme.muted;
+  static const Color _line = AppTheme.outline;
+  static const Color _softAccent = AppTheme.primaryContainer;
+  static const Color _chartGrid = AppTheme.outline;
+  static const Color _chartTrack = AppTheme.progressTrack;
   static const List<String> _monthNames = [
     'Januari',
     'Februari',
@@ -121,11 +128,11 @@ class _StatistikAdminState extends State<StatistikAdmin> {
       ),
     ];
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: _background,
       appBar: AppBar(
         title: const Text('Statistik PKL'),
-        backgroundColor: _blue,
-        foregroundColor: Colors.white,
+        backgroundColor: _header,
+        foregroundColor: _ink,
         elevation: 0,
       ),
       body: LayoutBuilder(
@@ -212,7 +219,7 @@ class _StatistikAdminState extends State<StatistikAdmin> {
         expand: false,
         builder: (context, scrollController) => Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: _surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -222,7 +229,7 @@ class _StatistikAdminState extends State<StatistikAdmin> {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD0D5DD),
+                  color: _line,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -333,7 +340,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-    color: Colors.white,
+    color: _StatistikAdminState._surface,
     borderRadius: BorderRadius.circular(12),
     child: InkWell(
       onTap: onTap,
@@ -345,7 +352,7 @@ class _SummaryCard extends StatelessWidget {
           border: Border.all(color: _StatistikAdminState._line),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x080D1B2A),
+              color: Color(0x100D1B0A),
               blurRadius: 12,
               offset: Offset(0, 4),
             ),
@@ -362,12 +369,12 @@ class _SummaryCard extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEAF2FC),
+                    color: _StatistikAdminState._softAccent,
                     borderRadius: BorderRadius.circular(9),
                   ),
                   child: Icon(
                     icon,
-                    color: _StatistikAdminState._blue,
+                    color: _StatistikAdminState._accent,
                     size: 20,
                   ),
                 ),
@@ -530,12 +537,12 @@ class _MonthlyJournalChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _StatistikAdminState._surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _StatistikAdminState._line),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x080D1B2A),
+            color: Color(0x120D1B0A),
             blurRadius: 12,
             offset: Offset(0, 4),
           ),
@@ -560,13 +567,22 @@ class _MonthlyJournalChart extends StatelessWidget {
                 value: period,
                 underline: const SizedBox.shrink(),
                 isDense: true,
+                dropdownColor: _StatistikAdminState._surface,
+                iconEnabledColor: _StatistikAdminState._accent,
+                style: const TextStyle(
+                  color: _StatistikAdminState._ink,
+                  fontSize: 13,
+                ),
                 items: periods
                     .map(
                       (option) => DropdownMenuItem(
                         value: option,
                         child: Text(
                           option.label,
-                          style: const TextStyle(fontSize: 13),
+                          style: const TextStyle(
+                            color: _StatistikAdminState._ink,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     )
@@ -589,8 +605,10 @@ class _MonthlyJournalChart extends StatelessWidget {
                 gridData: FlGridData(
                   drawVerticalLine: false,
                   horizontalInterval: maxY <= 4 ? 1 : (maxY / 4).ceilToDouble(),
-                  getDrawingHorizontalLine: (_) =>
-                      FlLine(color: const Color(0xFFEDF1F6), strokeWidth: 1),
+                  getDrawingHorizontalLine: (_) => FlLine(
+                    color: _StatistikAdminState._chartGrid,
+                    strokeWidth: 1,
+                  ),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
@@ -665,14 +683,14 @@ class _MonthlyJournalChart extends StatelessWidget {
                         BarChartRodData(
                           toY: counts[index].toDouble(),
                           width: 34,
-                          color: _StatistikAdminState._blue,
+                          color: _StatistikAdminState._accent,
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(5),
                           ),
                           backDrawRodData: BackgroundBarChartRodData(
                             show: true,
                             toY: maxY,
-                            color: const Color(0xFFF1F5FA),
+                            color: _StatistikAdminState._chartTrack,
                           ),
                         ),
                       ],
@@ -705,12 +723,12 @@ class _ClassJournalCount extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _StatistikAdminState._surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _StatistikAdminState._line),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x080D1B2A),
+            color: Color(0x120D1B0A),
             blurRadius: 12,
             offset: Offset(0, 4),
           ),
@@ -744,8 +762,8 @@ class _ClassJournalCount extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: const Color(0xFFEAF0F7),
-              color: _StatistikAdminState._blue,
+              backgroundColor: _StatistikAdminState._chartTrack,
+              color: _StatistikAdminState._accent,
             ),
           ),
         ],

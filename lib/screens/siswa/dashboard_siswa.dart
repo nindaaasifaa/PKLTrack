@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/jurnal_model.dart';
 import '../../services/jurnal_service.dart';
+import '../../theme/app_theme.dart';
 import 'detail_jurnal.dart';
 import 'profil_siswa.dart';
 import 'riwayat_jurnal.dart';
@@ -15,7 +16,7 @@ class DashboardSiswa extends StatefulWidget {
 }
 
 class _DashboardSiswaState extends State<DashboardSiswa> {
-  static const Color _blue = Color(0xFF1565C0);
+  static const Color _blue = AppTheme.accent;
   late List<JurnalModel> _jurnals;
 
   @override
@@ -27,11 +28,11 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('PKLTrack'),
-        backgroundColor: _blue,
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: AppTheme.onPrimary,
         actions: [
           IconButton(
             tooltip: 'Riwayat Jurnal',
@@ -61,7 +62,7 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
             const SizedBox(height: 4),
             const Text(
               'Pantau jurnal kegiatan PKL kamu.',
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: AppTheme.muted),
             ),
             const SizedBox(height: 20),
             _buildProgressCard(),
@@ -75,8 +76,8 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
                 icon: const Icon(Icons.add),
                 label: const Text('Tambah Jurnal'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _blue,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: AppTheme.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -98,9 +99,7 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
               ],
             ),
             const SizedBox(height: 4),
-            ..._jurnals.map(
-              (journal) => _buildJournalTile(context, journal),
-            ),
+            ..._jurnals.map((journal) => _buildJournalTile(context, journal)),
           ],
         ),
       ),
@@ -113,7 +112,7 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -141,14 +140,14 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 9,
-              backgroundColor: Color(0xFFE3EAF2),
+              backgroundColor: AppTheme.progressTrack,
               color: _blue,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             '${_jurnals.length} dari 5 jurnal',
-            style: const TextStyle(fontSize: 12, color: Colors.black54),
+            style: const TextStyle(fontSize: 12, color: AppTheme.muted),
           ),
         ],
       ),
@@ -170,7 +169,7 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
                 margin: EdgeInsets.only(right: entry.key == 'Ditolak' ? 0 : 10),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppTheme.surface,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
@@ -185,7 +184,10 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
                     const SizedBox(height: 4),
                     Text(
                       entry.key,
-                      style: const TextStyle(fontSize: 11, color: Colors.black54),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.muted,
+                      ),
                     ),
                   ],
                 ),
@@ -205,11 +207,11 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      color: Colors.white,
+      color: AppTheme.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: Color(0xFFE7ECF2)),
+        side: const BorderSide(color: AppTheme.outline),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -234,7 +236,7 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
             ],
           ),
         ),
-        trailing: Icon(Icons.chevron_right, color: Colors.grey.shade600),
+        trailing: const Icon(Icons.chevron_right, color: AppTheme.muted),
         onTap: () {
           Navigator.push(
             context,

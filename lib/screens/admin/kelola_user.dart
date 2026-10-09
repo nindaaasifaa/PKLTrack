@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
 import '../../services/admin_data_service.dart';
+import '../../theme/app_theme.dart';
 
 class KelolaUser extends StatefulWidget {
   const KelolaUser({super.key});
@@ -15,11 +16,11 @@ class _KelolaUserState extends State<KelolaUser> {
   Widget build(BuildContext context) {
     final users = AdminDataService.users;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Kelola User'),
-        backgroundColor: const Color(0xFF1565C0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: AppTheme.onPrimary,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _editUser(),
@@ -34,7 +35,7 @@ class _KelolaUserState extends State<KelolaUser> {
               itemBuilder: (context, index) {
                 final user = users[index];
                 return Card(
-                  color: Colors.white,
+                  color: AppTheme.surface,
                   child: ListTile(
                     leading: const CircleAvatar(
                       child: Icon(Icons.person_outline),

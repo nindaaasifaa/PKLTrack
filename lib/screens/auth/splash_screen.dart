@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_theme.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -20,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -29,12 +31,12 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFF1565C0),
+                color: AppTheme.primary,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(
                 Icons.menu_book_rounded,
-                color: Colors.white,
+                color: AppTheme.onPrimary,
                 size: 42,
               ),
             ),
@@ -42,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
             const Text(
               'PKLTrack',
               style: TextStyle(
-                color: Color(0xFF1565C0),
+                color: AppTheme.accent,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),

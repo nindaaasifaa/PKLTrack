@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/admin_data_service.dart';
+import '../../theme/app_theme.dart';
 
 class KelolaKelas extends StatefulWidget {
   const KelolaKelas({super.key});
@@ -12,11 +13,11 @@ class KelolaKelas extends StatefulWidget {
 class _KelolaKelasState extends State<KelolaKelas> {
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFFF5F7FA),
+    backgroundColor: AppTheme.background,
     appBar: AppBar(
       title: const Text('Kelola Kelas'),
-      backgroundColor: const Color(0xFF1565C0),
-      foregroundColor: Colors.white,
+      backgroundColor: AppTheme.primary,
+      foregroundColor: AppTheme.onPrimary,
     ),
     floatingActionButton: FloatingActionButton.extended(
       onPressed: () => _editClass(),
@@ -28,12 +29,9 @@ class _KelolaKelasState extends State<KelolaKelas> {
       children: [
         for (var index = 0; index < AdminDataService.kelas.length; index++)
           Card(
-            color: Colors.white,
+            color: AppTheme.surface,
             child: ListTile(
-              leading: const Icon(
-                Icons.class_outlined,
-                color: Color(0xFF1565C0),
-              ),
+              leading: const Icon(Icons.class_outlined, color: AppTheme.accent),
               title: Text(AdminDataService.kelas[index]),
               trailing: PopupMenuButton<String>(
                 onSelected: (action) {

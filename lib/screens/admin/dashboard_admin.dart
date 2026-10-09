@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../services/admin_data_service.dart';
 import '../../services/jurnal_service.dart';
+import '../../theme/app_theme.dart';
 import 'jurnal_admin.dart';
 import 'kelola_kelas.dart';
 import 'kelola_user.dart';
@@ -15,7 +16,7 @@ class DashboardAdmin extends StatelessWidget {
 
   final UserModel user;
 
-  static const Color _blue = Color(0xFF1565C0);
+  static const Color _blue = AppTheme.accent;
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +27,11 @@ class DashboardAdmin extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Dashboard Admin'),
-        backgroundColor: _blue,
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: AppTheme.onPrimary,
         actions: [
           IconButton(
             tooltip: 'Profil',
@@ -49,7 +50,7 @@ class DashboardAdmin extends StatelessWidget {
           const SizedBox(height: 4),
           const Text(
             'Admin / Staf TIK',
-            style: TextStyle(color: Colors.black54),
+            style: TextStyle(color: AppTheme.muted),
           ),
           const SizedBox(height: 20),
           Row(
@@ -62,7 +63,7 @@ class DashboardAdmin extends StatelessWidget {
                       ),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppTheme.surface,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Column(
@@ -79,7 +80,7 @@ class DashboardAdmin extends StatelessWidget {
                           ),
                           Text(
                             item.$1,
-                            style: const TextStyle(color: Colors.black54),
+                            style: const TextStyle(color: AppTheme.muted),
                           ),
                         ],
                       ),
@@ -148,14 +149,14 @@ class _MenuRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
     margin: const EdgeInsets.only(bottom: 8),
-    color: Colors.white,
+    color: AppTheme.surface,
     elevation: 0,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(8),
-      side: const BorderSide(color: Color(0xFFE7ECF2)),
+      side: const BorderSide(color: AppTheme.outline),
     ),
     child: ListTile(
-      leading: Icon(icon, color: const Color(0xFF1565C0)),
+      leading: Icon(icon, color: AppTheme.accent),
       title: Text(title),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,

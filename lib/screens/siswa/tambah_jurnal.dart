@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../models/jurnal_model.dart';
 import '../../services/jurnal_service.dart';
+import '../../theme/app_theme.dart';
 
 class TambahJurnal extends StatefulWidget {
   const TambahJurnal({super.key});
@@ -14,7 +15,6 @@ class TambahJurnal extends StatefulWidget {
 }
 
 class _TambahJurnalState extends State<TambahJurnal> {
-  static const Color _blue = Color(0xFF1565C0);
   static const List<String> _monthNames = [
     'Januari',
     'Februari',
@@ -47,10 +47,10 @@ class _TambahJurnalState extends State<TambahJurnal> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: _blue,
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: AppTheme.onPrimary,
         title: const Text('Tambah Jurnal'),
       ),
       body: SafeArea(
@@ -72,8 +72,8 @@ class _TambahJurnalState extends State<TambahJurnal> {
                   icon: const Icon(Icons.save_outlined),
                   label: const Text('Simpan Jurnal'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _blue,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: AppTheme.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -113,7 +113,9 @@ class _TambahJurnalState extends State<TambahJurnal> {
                   ? 'Pilih tanggal kegiatan'
                   : _formatDate(field.value!),
               style: TextStyle(
-                color: field.value == null ? Colors.black54 : Colors.black87,
+                color: field.value == null
+                    ? AppTheme.muted
+                    : AppTheme.onSurface,
               ),
             ),
           ),
@@ -179,7 +181,7 @@ class _TambahJurnalState extends State<TambahJurnal> {
                 field.value == null ? 'Pilih Foto dari Galeri' : 'Ganti Foto',
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: _blue,
+                foregroundColor: AppTheme.accent,
                 minimumSize: const Size.fromHeight(48),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -276,9 +278,9 @@ class _FormSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE7ECF2)),
+        border: Border.all(color: AppTheme.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

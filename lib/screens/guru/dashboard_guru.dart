@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/jurnal_model.dart';
 import '../../models/user_model.dart';
 import '../../services/jurnal_service.dart';
+import '../../theme/app_theme.dart';
 import 'profil_guru.dart';
 import 'validasi_jurnal.dart';
 
@@ -16,7 +17,7 @@ class DashboardGuru extends StatefulWidget {
 }
 
 class _DashboardGuruState extends State<DashboardGuru> {
-  static const Color _blue = Color(0xFF1565C0);
+  static const Color _blue = AppTheme.accent;
   static const int _targetJurnal = 5;
   late List<JurnalModel> _jurnals;
 
@@ -29,11 +30,11 @@ class _DashboardGuruState extends State<DashboardGuru> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('PKLTrack'),
-        backgroundColor: _blue,
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: AppTheme.onPrimary,
         actions: [
           IconButton(
             tooltip: 'Profil Guru',
@@ -60,7 +61,7 @@ class _DashboardGuruState extends State<DashboardGuru> {
             const SizedBox(height: 4),
             const Text(
               'Pantau dan validasi jurnal kegiatan siswa.',
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: AppTheme.muted),
             ),
             const SizedBox(height: 20),
             _buildSummary(),
@@ -94,7 +95,7 @@ class _DashboardGuruState extends State<DashboardGuru> {
           width: double.infinity,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.surface,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -135,7 +136,7 @@ class _DashboardGuruState extends State<DashboardGuru> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.surface,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
@@ -151,7 +152,7 @@ class _DashboardGuruState extends State<DashboardGuru> {
             const SizedBox(height: 4),
             Text(
               status,
-              style: const TextStyle(fontSize: 11, color: Colors.black54),
+              style: const TextStyle(fontSize: 11, color: AppTheme.muted),
               textAlign: TextAlign.center,
             ),
           ],
@@ -173,7 +174,7 @@ class _DashboardGuruState extends State<DashboardGuru> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.surface,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -187,12 +188,13 @@ class _DashboardGuruState extends State<DashboardGuru> {
           if (counts.isEmpty)
             const Text(
               'Belum ada progress jurnal.',
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: AppTheme.muted),
             )
           else
             ...counts.entries.map((entry) {
-              final progress =
-                  (entry.value / _targetJurnal).clamp(0.0, 1.0).toDouble();
+              final progress = (entry.value / _targetJurnal)
+                  .clamp(0.0, 1.0)
+                  .toDouble();
               return Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Column(
@@ -209,7 +211,7 @@ class _DashboardGuruState extends State<DashboardGuru> {
                     LinearProgressIndicator(
                       value: progress,
                       minHeight: 8,
-                      backgroundColor: const Color(0xFFE3EAF2),
+                      backgroundColor: AppTheme.progressTrack,
                       color: _blue,
                     ),
                   ],
@@ -230,11 +232,11 @@ class _DashboardGuruState extends State<DashboardGuru> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      color: Colors.white,
+      color: AppTheme.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: Color(0xFFE7ECF2)),
+        side: const BorderSide(color: AppTheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -260,9 +262,13 @@ class _DashboardGuruState extends State<DashboardGuru> {
               ],
             ),
             const SizedBox(height: 5),
-            Text(journal.date, style: const TextStyle(color: Colors.black54)),
+            Text(journal.date, style: const TextStyle(color: AppTheme.muted)),
             const SizedBox(height: 8),
-            Text(journal.activity, maxLines: 2, overflow: TextOverflow.ellipsis),
+            Text(
+              journal.activity,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,

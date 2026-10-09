@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
+import '../../theme/app_theme.dart';
 
 class ProfilGuru extends StatelessWidget {
   const ProfilGuru({required this.user, super.key});
 
   final UserModel user;
 
-  static const Color _blue = Color(0xFF1565C0);
+  static const Color _blue = AppTheme.accent;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Profil Guru'),
-        backgroundColor: _blue,
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: AppTheme.onPrimary,
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -24,14 +25,14 @@ class ProfilGuru extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               children: [
                 const CircleAvatar(
                   radius: 38,
-                  backgroundColor: Color(0xFFE8F1FC),
+                  backgroundColor: AppTheme.primaryContainer,
                   child: Icon(Icons.person, color: _blue, size: 40),
                 ),
                 const SizedBox(height: 12),
@@ -43,7 +44,10 @@ class ProfilGuru extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text('Role: Guru', style: TextStyle(color: Colors.black54)),
+                const Text(
+                  'Role: Guru',
+                  style: TextStyle(color: AppTheme.muted),
+                ),
                 const Divider(height: 28),
                 _ProfileInfo(label: 'Username', value: user.username),
               ],
@@ -106,7 +110,7 @@ class _ProfileInfo extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.black54)),
+        Text(label, style: const TextStyle(color: AppTheme.muted)),
         Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
       ],
     );

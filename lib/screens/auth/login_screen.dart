@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../models/user_model.dart';
+import '../../theme/app_theme.dart';
 import '../admin/dashboard_admin.dart';
 import '../guru/dashboard_guru.dart';
 import '../siswa/dashboard_siswa.dart';
@@ -92,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: const SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.dark,
@@ -109,12 +110,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1565C0),
+                      color: AppTheme.primary,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Icon(
                       Icons.menu_book_rounded,
-                      color: Colors.white,
+                      color: AppTheme.onPrimary,
                       size: 42,
                     ),
                   ),
@@ -127,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1565C0),
+                      color: AppTheme.accent,
                     ),
                   ),
 
@@ -135,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const Text(
                     'Jurnal Kegiatan PKL Siswa',
-                    style: TextStyle(fontSize: 15, color: Colors.grey),
+                    style: TextStyle(fontSize: 15, color: AppTheme.muted),
                   ),
 
                   const SizedBox(height: 40),
@@ -151,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: AppTheme.surface,
                     ),
                   ),
 
@@ -181,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: AppTheme.surface,
                     ),
                   ),
 
@@ -194,8 +195,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: ElevatedButton(
                       onPressed: login,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1565C0),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: AppTheme.onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -214,14 +215,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text(
                     'Demo siswa: siswa / 123456  |  guru: guru / guru123',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(fontSize: 12, color: AppTheme.muted),
                   ),
 
                   const SizedBox(height: 24),
 
                   const Text(
                     'PKLTrack - Jurnal Kegiatan PKL Siswa',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(fontSize: 12, color: AppTheme.muted),
                   ),
                 ],
               ),

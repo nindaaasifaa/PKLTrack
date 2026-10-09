@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
+import '../../theme/app_theme.dart';
 
 class ProfilAdmin extends StatelessWidget {
   const ProfilAdmin({required this.user, super.key});
@@ -9,17 +10,17 @@ class ProfilAdmin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFFF5F7FA),
+    backgroundColor: AppTheme.background,
     appBar: AppBar(
       title: const Text('Profil Admin'),
-      backgroundColor: const Color(0xFF1565C0),
-      foregroundColor: Colors.white,
+      backgroundColor: AppTheme.primary,
+      foregroundColor: AppTheme.onPrimary,
     ),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
         Card(
-          color: Colors.white,
+          color: AppTheme.surface,
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -88,7 +89,7 @@ class _ProfileInfo extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      Text(label, style: const TextStyle(color: Colors.black54)),
+      Text(label, style: const TextStyle(color: AppTheme.muted)),
       Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
     ],
   );

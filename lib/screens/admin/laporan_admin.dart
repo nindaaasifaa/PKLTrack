@@ -9,6 +9,7 @@ import 'package:printing/printing.dart';
 import '../../models/jurnal_model.dart';
 import '../../services/admin_data_service.dart';
 import '../../services/jurnal_service.dart';
+import '../../theme/app_theme.dart';
 
 class LaporanAdmin extends StatefulWidget {
   const LaporanAdmin({super.key});
@@ -23,23 +24,24 @@ class _LaporanAdminState extends State<LaporanAdmin> {
   DateTimeRange? _period;
   bool _isExporting = false;
 
-  List<JurnalModel> get _filteredJournals =>
-      JurnalService.semuaJurnal.where((journal) {
-        final className =
-            journal.className ??
-            AdminDataService.classForStudent(journal.studentName);
-        if (_selectedClass != null && className != _selectedClass) return false;
-        if (_selectedStudent != null && journal.studentName != _selectedStudent) {
-          return false;
-        }
-        final date = _parseDate(journal.date);
-        if (_period != null &&
-            date != null &&
-            (date.isBefore(_period!.start) || date.isAfter(_period!.end))) {
-          return false;
-        }
-        return true;
-      }).toList();
+  List<JurnalModel> get _filteredJournals => JurnalService.semuaJurnal.where((
+    journal,
+  ) {
+    final className =
+        journal.className ??
+        AdminDataService.classForStudent(journal.studentName);
+    if (_selectedClass != null && className != _selectedClass) return false;
+    if (_selectedStudent != null && journal.studentName != _selectedStudent) {
+      return false;
+    }
+    final date = _parseDate(journal.date);
+    if (_period != null &&
+        date != null &&
+        (date.isBefore(_period!.start) || date.isAfter(_period!.end))) {
+      return false;
+    }
+    return true;
+  }).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +56,11 @@ class _LaporanAdminState extends State<LaporanAdmin> {
     }
     final journals = _filteredJournals;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Laporan Kegiatan Siswa'),
-        backgroundColor: const Color(0xFF1565C0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: AppTheme.onPrimary,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -137,7 +139,7 @@ class _LaporanAdminState extends State<LaporanAdmin> {
           else
             ...journals.map(
               (journal) => Card(
-                color: Colors.white,
+                color: AppTheme.surface,
                 child: ListTile(
                   title: Text(journal.studentName),
                   subtitle: Text('${journal.date}\n${journal.activity}'),

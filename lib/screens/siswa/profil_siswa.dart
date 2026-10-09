@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_theme.dart';
+
 class ProfilSiswa extends StatelessWidget {
   const ProfilSiswa({super.key});
 
-  static const Color _blue = Color(0xFF1565C0);
+  static const Color _blue = AppTheme.accent;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Profil Siswa'),
-        backgroundColor: _blue,
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: AppTheme.onPrimary,
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -20,14 +22,14 @@ class ProfilSiswa extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Column(
               children: [
                 CircleAvatar(
                   radius: 36,
-                  backgroundColor: Color(0xFFE8F1FC),
+                  backgroundColor: AppTheme.primaryContainer,
                   child: Icon(Icons.person, color: _blue, size: 38),
                 ),
                 SizedBox(height: 12),
@@ -36,7 +38,7 @@ class ProfilSiswa extends StatelessWidget {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 4),
-                Text('Role: Siswa', style: TextStyle(color: Colors.black54)),
+                Text('Role: Siswa', style: TextStyle(color: AppTheme.muted)),
                 Divider(height: 28),
                 _ProfileInfo(label: 'Username', value: 'siswa'),
               ],
@@ -47,10 +49,8 @@ class ProfilSiswa extends StatelessWidget {
             height: 50,
             child: OutlinedButton.icon(
               onPressed: () {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/login',
-                  (route) => false,
-                );
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/login', (route) => false);
               },
               icon: const Icon(Icons.logout),
               label: const Text('Logout'),
@@ -80,7 +80,7 @@ class _ProfileInfo extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.black54)),
+        Text(label, style: const TextStyle(color: AppTheme.muted)),
         Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
       ],
     );

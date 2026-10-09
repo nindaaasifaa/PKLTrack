@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../models/jurnal_model.dart';
 import '../../services/admin_data_service.dart';
 import '../../services/jurnal_service.dart';
+import '../../theme/app_theme.dart';
 
 class JurnalAdmin extends StatelessWidget {
   const JurnalAdmin({super.key});
@@ -13,11 +14,11 @@ class JurnalAdmin extends StatelessWidget {
   Widget build(BuildContext context) {
     final journals = JurnalService.semuaJurnal;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Data Jurnal'),
-        backgroundColor: const Color(0xFF1565C0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: AppTheme.onPrimary,
       ),
       body: journals.isEmpty
           ? const Center(child: Text('Belum ada jurnal siswa.'))
@@ -48,7 +49,7 @@ class _JournalTile extends StatelessWidget {
       _ => Colors.orange.shade800,
     };
     return Card(
-      color: Colors.white,
+      color: AppTheme.surface,
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -75,7 +76,7 @@ class _JournalTile extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               '$className · ${journal.date}',
-              style: const TextStyle(color: Colors.black54),
+              style: const TextStyle(color: AppTheme.muted),
             ),
             const SizedBox(height: 10),
             Text(journal.activity),

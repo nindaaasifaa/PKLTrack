@@ -154,6 +154,16 @@ void main() {
 
     await tester.tap(find.text('Logout'));
     await tester.pumpAndSettle();
+    expect(find.text('Apakah Anda yakin ingin keluar?'), findsOneWidget);
+
+    await tester.tap(find.text('Batal'));
+    await tester.pumpAndSettle();
+    expect(find.text('Profil Siswa'), findsOneWidget);
+
+    await tester.tap(find.text('Logout'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Logout'));
+    await tester.pumpAndSettle();
 
     expect(find.text('Jurnal Kegiatan PKL Siswa'), findsOneWidget);
     expect(find.text('LOGIN'), findsOneWidget);

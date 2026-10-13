@@ -48,10 +48,7 @@ class ProfilSiswa extends StatelessWidget {
           SizedBox(
             height: 50,
             child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/login', (route) => false);
-              },
+              onPressed: () => _confirmLogout(context),
               icon: const Icon(Icons.logout),
               label: const Text('Logout'),
               style: OutlinedButton.styleFrom(
@@ -66,6 +63,30 @@ class ProfilSiswa extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Konfirmasi Logout'),
+        content: const Text('Apakah Anda yakin ingin keluar?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true && context.mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
   }
 }
 

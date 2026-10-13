@@ -120,6 +120,14 @@ void main() {
 
     final searchField = find.byType(TextField).first;
     final filters = find.byType(DropdownButtonFormField<String>);
+    await tester.scrollUntilVisible(
+      find.text('Riwayat Jurnal'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Riwayat Jurnal'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(searchField);
     await tester.enterText(searchField, 'rPl');
     await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
@@ -172,6 +180,92 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsOneWidget);
     expect(find.widgetWithText(Card, 'Siswa RPL 1'), findsNothing);
+    expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
+  });
+
+  testWidgets('guru memisahkan jurnal pending dan riwayat', (
+    WidgetTester tester,
+  ) async {
+    await _openLogin(tester);
+    await _loginAsGuru(tester);
+
+    final pendingJournal = find.widgetWithText(Card, 'Siswa RPL 1');
+    await tester.scrollUntilVisible(
+      pendingJournal,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(pendingJournal, findsOneWidget);
+    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsNothing);
+    expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
+
+    final historyTab = find.text('Riwayat Jurnal');
+    await tester.ensureVisible(historyTab);
+    await tester.tap(historyTab);
+    await tester.pumpAndSettle();
+
+    final approvedJournal = find.widgetWithText(Card, 'Siswa RPL 2');
+    await tester.scrollUntilVisible(
+      approvedJournal,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(approvedJournal, findsOneWidget);
+    expect(find.text('Disetujui'), findsOneWidget);
+    expect(find.widgetWithText(Card, 'Siswa RPL 1'), findsNothing);
+
+    final rejectedJournal = find.widgetWithText(Card, 'Siswa TKJ 1');
+    await tester.scrollUntilVisible(
+      rejectedJournal,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(rejectedJournal, findsOneWidget);
+    expect(find.text('Ditolak'), findsOneWidget);
+    expect(find.widgetWithText(Card, 'Siswa RPL 1'), findsNothing);
+
+    final pendingTab = find.text('Perlu Validasi');
+    await tester.scrollUntilVisible(
+      pendingTab,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(pendingTab);
+    await tester.pumpAndSettle();
+
+    final searchField = find.byType(TextField).first;
+    await tester.scrollUntilVisible(
+      searchField,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(searchField, 'rPl');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+
+    final filters = find.byType(DropdownButtonFormField<String>);
+    await tester.scrollUntilVisible(
+      filters.first,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(filters.first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('RPL').last);
+    await tester.pumpAndSettle();
+    await tester.tap(filters.last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pending').last);
+    await tester.pumpAndSettle();
+
+    final filteredPendingJournal = find.widgetWithText(Card, 'Siswa RPL 1');
+    await tester.scrollUntilVisible(
+      filteredPendingJournal,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(filteredPendingJournal, findsOneWidget);
+    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsNothing);
     expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
   });
 
@@ -314,6 +408,13 @@ void main() {
     expect(find.text('Halo, Guru!'), findsOneWidget);
     expect(find.text('0'), findsWidgets);
 
+    await tester.scrollUntilVisible(
+      find.text('Riwayat Jurnal'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Riwayat Jurnal'));
+    await tester.pumpAndSettle();
     final updatedValidationButton = find.text('Lihat & Validasi').first;
     await tester.drag(find.byType(ListView).first, const Offset(0, -500));
     await tester.pumpAndSettle();

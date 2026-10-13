@@ -25,6 +25,7 @@ class _DashboardGuruState extends State<DashboardGuru> {
   late final TextEditingController _searchController;
   String _selectedClass = _allClasses;
   String _selectedStatus = _allStatuses;
+  bool _showHistory = false;
 
   @override
   void initState() {
@@ -60,20 +61,24 @@ class _DashboardGuruState extends State<DashboardGuru> {
   }
 
   bool _matchesFilters(JurnalModel journal, String query) {
+    final journalStatus = journal.status.trim().toLowerCase();
     final classMatches =
         _selectedClass == _allClasses ||
         journal.className?.trim().toLowerCase() ==
             _selectedClass.trim().toLowerCase();
     final statusMatches =
         _selectedStatus == _allStatuses ||
-        journal.status.trim().toLowerCase() == _selectedStatus.toLowerCase();
+        journalStatus == _selectedStatus.toLowerCase();
+    final tabMatches = _showHistory
+        ? journalStatus == 'disetujui' || journalStatus == 'ditolak'
+        : journalStatus == 'pending';
     final queryMatches =
         query.isEmpty ||
         journal.studentName.toLowerCase().contains(query) ||
         (journal.className?.toLowerCase().contains(query) ?? false) ||
         journal.activity.toLowerCase().contains(query);
 
-    return classMatches && statusMatches && queryMatches;
+    return tabMatches && classMatches && statusMatches && queryMatches;
   }
 
   @override
@@ -125,6 +130,8 @@ class _DashboardGuruState extends State<DashboardGuru> {
             const SizedBox(height: 10),
             _buildJournalFilters(),
             const SizedBox(height: 12),
+            _buildJournalTabs(),
+            const SizedBox(height: 12),
             if (filteredJournalIndices.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
@@ -137,6 +144,20 @@ class _DashboardGuruState extends State<DashboardGuru> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildJournalTabs() {
+    return SegmentedButton<bool>(
+      showSelectedIcon: false,
+      segments: const [
+        ButtonSegment(value: false, label: Text('Perlu Validasi')),
+        ButtonSegment(value: true, label: Text('Riwayat Jurnal')),
+      ],
+      selected: {_showHistory},
+      onSelectionChanged: (selection) {
+        setState(() => _showHistory = selection.first);
+      },
     );
   }
 

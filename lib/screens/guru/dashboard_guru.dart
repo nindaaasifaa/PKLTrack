@@ -55,19 +55,30 @@ class _DashboardGuruState extends State<DashboardGuru> {
     final query = _searchController.text.trim().toLowerCase();
     return [
       for (var index = 0; index < _jurnals.length; index++)
-        if ((_selectedClass == _allClasses ||
-                _jurnals[index].className == _selectedClass) &&
-            (_selectedStatus == _allStatuses ||
-                _jurnals[index].status == _selectedStatus) &&
-            (query.isEmpty ||
-                _jurnals[index].studentName.toLowerCase().contains(query) ||
-                _jurnals[index].activity.toLowerCase().contains(query)))
-          index,
+        if (_matchesFilters(_jurnals[index], query)) index,
     ];
+  }
+
+  bool _matchesFilters(JurnalModel journal, String query) {
+    final classMatches =
+        _selectedClass == _allClasses ||
+        journal.className?.trim().toLowerCase() ==
+            _selectedClass.trim().toLowerCase();
+    final statusMatches =
+        _selectedStatus == _allStatuses ||
+        journal.status.trim().toLowerCase() == _selectedStatus.toLowerCase();
+    final queryMatches =
+        query.isEmpty ||
+        journal.studentName.toLowerCase().contains(query) ||
+        (journal.className?.toLowerCase().contains(query) ?? false) ||
+        journal.activity.toLowerCase().contains(query);
+
+    return classMatches && statusMatches && queryMatches;
   }
 
   @override
   Widget build(BuildContext context) {
+    final filteredJournalIndices = _filteredJournalIndices;
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
@@ -114,20 +125,13 @@ class _DashboardGuruState extends State<DashboardGuru> {
             const SizedBox(height: 10),
             _buildJournalFilters(),
             const SizedBox(height: 12),
-            if (_jurnals.isEmpty)
+            if (filteredJournalIndices.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(child: Text('Belum ada jurnal siswa.')),
-              )
-            else if (_filteredJournalIndices.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(
-                  child: Text('Tidak ada jurnal yang sesuai dengan filter.'),
-                ),
+                child: Center(child: Text('Jurnal tidak ditemukan')),
               )
             else
-              ..._filteredJournalIndices.map(
+              ...filteredJournalIndices.map(
                 (index) => _buildJournalCard(index, _jurnals[index]),
               ),
           ],
@@ -190,9 +194,14 @@ class _DashboardGuruState extends State<DashboardGuru> {
       children: [
         TextField(
           controller: _searchController,
+          textInputAction: TextInputAction.search,
           onChanged: (_) => setState(() {}),
+          onSubmitted: (_) {
+            setState(() {});
+            FocusScope.of(context).unfocus();
+          },
           decoration: InputDecoration(
-            hintText: 'Cari nama siswa atau kegiatan jurnal',
+            hintText: 'Cari nama, kelas, atau kegiatan jurnal',
             prefixIcon: const Icon(Icons.search),
             suffixIcon: _searchController.text.isEmpty
                 ? null
@@ -368,6 +377,7 @@ class _DashboardGuruState extends State<DashboardGuru> {
   }
 
   Widget _buildJournalCard(int index, JurnalModel journal) {
+    final className = journal.className?.trim();
     final statusColor = switch (journal.status) {
       'Disetujui' => Colors.green.shade700,
       'Ditolak' => Colors.red.shade700,
@@ -405,6 +415,13 @@ class _DashboardGuruState extends State<DashboardGuru> {
                 ),
               ],
             ),
+            if (className != null && className.isNotEmpty) ...[
+              const SizedBox(height: 5),
+              Text(
+                'Kelas: $className',
+                style: const TextStyle(color: AppTheme.muted),
+              ),
+            ],
             const SizedBox(height: 5),
             Text(journal.date, style: const TextStyle(color: AppTheme.muted)),
             const SizedBox(height: 8),

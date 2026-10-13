@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_1/main.dart';
+import 'package:flutter_application_1/screens/siswa/tambah_jurnal.dart';
 import 'package:flutter_application_1/services/jadwal_pkl_service.dart';
 
 void main() {
@@ -9,6 +10,25 @@ void main() {
     expect(JadwalPklService.isHariWajib(DateTime(2026, 10, 9)), isTrue);
     expect(JadwalPklService.isHariWajib(DateTime(2026, 10, 10)), isFalse);
     expect(JadwalPklService.isHariWajib(DateTime(2026, 10, 11)), isFalse);
+  });
+
+  testWidgets('form jurnal memungkinkan siswa memilih kelas', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: TambahJurnal()));
+
+    final classDropdown = find.byType(DropdownButtonFormField<String>);
+    expect(classDropdown, findsOneWidget);
+    expect(find.text('Pilih kelas'), findsOneWidget);
+
+    await tester.tap(classDropdown);
+    await tester.pumpAndSettle();
+    expect(find.text('RPL'), findsOneWidget);
+    expect(find.text('TKJ'), findsOneWidget);
+
+    await tester.tap(find.text('TKJ').last);
+    await tester.pumpAndSettle();
+    expect(find.text('TKJ'), findsOneWidget);
   });
 
   testWidgets('aplikasi dimulai pada halaman login', (
@@ -100,11 +120,13 @@ void main() {
 
     final searchField = find.byType(TextField).first;
     final filters = find.byType(DropdownButtonFormField<String>);
-    await tester.enterText(searchField, 'Siswa');
+    await tester.enterText(searchField, 'rPl');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
 
     await tester.drag(find.byType(ListView).first, const Offset(0, -300));
     await tester.pumpAndSettle();
+    expect(find.text('Kelas: RPL'), findsWidgets);
     await tester.tap(filters.first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('RPL').last);
@@ -112,28 +134,44 @@ void main() {
 
     await tester.tap(filters.last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Pending').last);
+    await tester.tap(find.text('Disetujui').last);
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
-      find.widgetWithText(Card, 'Siswa RPL 1'),
+      find.widgetWithText(Card, 'Siswa RPL 2'),
       100,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.widgetWithText(Card, 'Siswa RPL 1'), findsOneWidget);
-    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsNothing);
+    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsOneWidget);
+    expect(find.text('Kelas: RPL'), findsOneWidget);
+    expect(find.widgetWithText(Card, 'Siswa RPL 1'), findsNothing);
     expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
 
     await tester.ensureVisible(searchField);
-    await tester.enterText(searchField, 'pemeriksaan');
+    await tester.enterText(searchField, 'dOkumentasi');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
     await tester.drag(find.byType(ListView).first, const Offset(0, -300));
     await tester.pumpAndSettle();
-    expect(
-      find.text('Membantu pemeriksaan perangkat komputer'),
-      findsOneWidget,
-    );
-    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsNothing);
+    expect(find.text('Merapikan dokumentasi kegiatan kantor'), findsOneWidget);
+    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsOneWidget);
+    expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
+
+    await tester.ensureVisible(searchField);
+    await tester.enterText(searchField, 'tidak-ada');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+    await tester.pumpAndSettle();
+    expect(find.text('Jurnal tidak ditemukan'), findsOneWidget);
+
+    await tester.ensureVisible(searchField);
+    await tester.tap(find.byTooltip('Hapus pencarian'));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsOneWidget);
+    expect(find.widgetWithText(Card, 'Siswa RPL 1'), findsNothing);
     expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
   });
 

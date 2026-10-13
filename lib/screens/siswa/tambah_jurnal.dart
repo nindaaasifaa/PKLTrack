@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/jurnal_model.dart';
+import '../../services/admin_data_service.dart';
 import '../../services/jurnal_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -34,6 +35,7 @@ class _TambahJurnalState extends State<TambahJurnal> {
   final _activityController = TextEditingController();
   final _imagePicker = ImagePicker();
   DateTime? _selectedDate;
+  String? _selectedClass;
   XFile? _selectedImage;
   bool _isPickingImage = false;
   bool _isSaving = false;
@@ -60,6 +62,8 @@ class _TambahJurnalState extends State<TambahJurnal> {
             padding: const EdgeInsets.all(20),
             children: [
               _buildDateField(),
+              const SizedBox(height: 18),
+              _buildClassField(),
               const SizedBox(height: 18),
               _buildActivityField(),
               const SizedBox(height: 18),
@@ -141,6 +145,33 @@ class _TambahJurnalState extends State<TambahJurnal> {
         validator: (value) => value == null || value.trim().isEmpty
             ? 'Kegiatan PKL wajib diisi.'
             : null,
+      ),
+    );
+  }
+
+  Widget _buildClassField() {
+    final classes = AdminDataService.kelas;
+    return _FormSection(
+      title: 'Kelas',
+      child: DropdownButtonFormField<String>(
+        initialValue: _selectedClass,
+        isExpanded: true,
+        decoration: InputDecoration(
+          hintText: 'Pilih kelas',
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 15,
+          ),
+        ),
+        items: classes
+            .map(
+              (className) =>
+                  DropdownMenuItem(value: className, child: Text(className)),
+            )
+            .toList(),
+        validator: (value) => value == null ? 'Kelas wajib dipilih.' : null,
+        onChanged: (value) => setState(() => _selectedClass = value),
       ),
     );
   }
@@ -251,6 +282,7 @@ class _TambahJurnalState extends State<TambahJurnal> {
         date: _formatDate(_selectedDate!),
         activity: _activityController.text.trim(),
         status: 'Pending',
+        className: _selectedClass!,
         imagePath: _selectedImage?.path,
       ),
     );

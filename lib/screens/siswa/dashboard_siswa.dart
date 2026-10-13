@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../models/jurnal_model.dart';
 import '../../services/jadwal_pkl_service.dart';
+import '../../services/foto_profil_siswa_service.dart';
 import '../../services/jurnal_service.dart';
 import '../../theme/app_theme.dart';
 import 'detail_jurnal.dart';
@@ -39,15 +41,44 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
             icon: const Icon(Icons.history),
             onPressed: () => _openHistory(context),
           ),
-          IconButton(
-            tooltip: 'Profil Siswa',
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(builder: (_) => const ProfilSiswa()),
-              );
-            },
+          ValueListenableBuilder<bool>(
+            valueListenable: FotoProfilSiswaService.sedangMemilih,
+            builder: (context, isPicking, _) => IconButton(
+              tooltip: 'Tambah atau ganti foto profil',
+              onPressed: isPicking ? null : _selectProfilePhoto,
+              icon: isPicking
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.camera_alt_outlined),
+            ),
+          ),
+          ValueListenableBuilder<Uint8List?>(
+            valueListenable: FotoProfilSiswaService.fotoBytes,
+            builder: (context, photoBytes, _) => IconButton(
+              tooltip: 'Profil Siswa',
+              icon: CircleAvatar(
+                radius: 14,
+                backgroundColor: AppTheme.surface,
+                backgroundImage: photoBytes == null
+                    ? null
+                    : MemoryImage(photoBytes),
+                child: photoBytes == null
+                    ? const Icon(
+                        Icons.person_outline,
+                        size: 19,
+                        color: AppTheme.onPrimary,
+                      )
+                    : null,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(builder: (_) => const ProfilSiswa()),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -290,6 +321,20 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
 
   int _countStatus(String status) =>
       _jurnals.where((journal) => journal.status == status).length;
+
+  Future<void> _selectProfilePhoto() async {
+    try {
+      await FotoProfilSiswaService.pilihDariGaleri();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil tidak dapat dibuka. Silakan coba lagi.'),
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> _openAddJournal(BuildContext context) async {
     final wasSaved = await Navigator.push<bool>(

@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_1/main.dart';
 import 'package:flutter_application_1/models/jurnal_model.dart';
+import 'package:flutter_application_1/services/foto_profil_siswa_service.dart';
 import 'package:flutter_application_1/screens/guru/validasi_jurnal.dart';
 import 'package:flutter_application_1/screens/siswa/tambah_jurnal.dart';
 import 'package:flutter_application_1/services/jadwal_pkl_service.dart';
@@ -168,6 +170,35 @@ void main() {
 
     expect(find.text('Jurnal Kegiatan PKL Siswa'), findsOneWidget);
     expect(find.text('LOGIN'), findsOneWidget);
+  });
+
+  testWidgets('foto profil terlihat di dashboard dan halaman profil siswa', (
+    WidgetTester tester,
+  ) async {
+    final photoBytes = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfS8AAAAASUVORK5CYII=',
+    );
+    FotoProfilSiswaService.fotoBytes.value = photoBytes;
+    addTearDown(() => FotoProfilSiswaService.fotoBytes.value = null);
+
+    await _openLogin(tester);
+    await tester.enterText(find.byType(TextField).at(0), 'siswa');
+    await tester.enterText(find.byType(TextField).at(1), '123456');
+    await tester.tap(find.text('LOGIN'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Tambah atau ganti foto profil'), findsOneWidget);
+    final dashboardAvatar = tester.widget<CircleAvatar>(
+      find.descendant(
+        of: find.byTooltip('Profil Siswa'),
+        matching: find.byType(CircleAvatar),
+      ),
+    );
+    expect(dashboardAvatar.backgroundImage, isA<MemoryImage>());
+
+    await tester.tap(find.byTooltip('Profil Siswa'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Ganti foto profil'), findsOneWidget);
   });
 
   testWidgets('login akun guru membuka Dashboard Guru', (

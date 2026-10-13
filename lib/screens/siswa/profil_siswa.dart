@@ -1,22 +1,13 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
 
+import '../../services/foto_profil_siswa_service.dart';
 import '../../theme/app_theme.dart';
 
-class ProfilSiswa extends StatefulWidget {
+class ProfilSiswa extends StatelessWidget {
   const ProfilSiswa({super.key});
 
-  @override
-  State<ProfilSiswa> createState() => _ProfilSiswaState();
-}
-
-class _ProfilSiswaState extends State<ProfilSiswa> {
   static const Color _blue = AppTheme.accent;
-  final ImagePicker _imagePicker = ImagePicker();
-  Uint8List? _profilePhotoBytes;
-  bool _isPickingPhoto = false;
 
   @override
   Widget build(BuildContext context) {
@@ -39,48 +30,7 @@ class _ProfilSiswaState extends State<ProfilSiswa> {
             ),
             child: Row(
               children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    CircleAvatar(
-                      radius: 34,
-                      backgroundColor: AppTheme.surface,
-                      backgroundImage: _profilePhotoBytes == null
-                          ? null
-                          : MemoryImage(_profilePhotoBytes!),
-                      child: _profilePhotoBytes == null
-                          ? const Icon(
-                              Icons.person_outline,
-                              color: _blue,
-                              size: 36,
-                            )
-                          : null,
-                    ),
-                    Positioned(
-                      right: -10,
-                      bottom: -10,
-                      child: IconButton.filled(
-                        tooltip: _profilePhotoBytes == null
-                            ? 'Tambah foto profil'
-                            : 'Ganti foto profil',
-                        onPressed: _isPickingPhoto ? null : _selectProfilePhoto,
-                        style: IconButton.styleFrom(
-                          backgroundColor: AppTheme.accent,
-                          foregroundColor: AppTheme.onPrimary,
-                        ),
-                        icon: _isPickingPhoto
-                            ? const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppTheme.onPrimary,
-                                ),
-                              )
-                            : const Icon(Icons.camera_alt_outlined, size: 19),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildPhotoAvatar(context),
                 SizedBox(width: 16),
                 const Expanded(
                   child: Column(
@@ -164,24 +114,66 @@ class _ProfilSiswaState extends State<ProfilSiswa> {
     );
   }
 
-  Future<void> _selectProfilePhoto() async {
-    setState(() => _isPickingPhoto = true);
-    try {
-      final image = await _imagePicker.pickImage(source: ImageSource.gallery);
-      if (image == null || !mounted) return;
+  Widget _buildPhotoAvatar(BuildContext context) {
+    return ValueListenableBuilder<Uint8List?>(
+      valueListenable: FotoProfilSiswaService.fotoBytes,
+      builder: (context, photoBytes, _) => Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CircleAvatar(
+            radius: 34,
+            backgroundColor: AppTheme.surface,
+            backgroundImage: photoBytes == null
+                ? null
+                : MemoryImage(photoBytes),
+            child: photoBytes == null
+                ? const Icon(Icons.person_outline, color: _blue, size: 36)
+                : null,
+          ),
+          Positioned(
+            right: -10,
+            bottom: -10,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: FotoProfilSiswaService.sedangMemilih,
+              builder: (context, isPicking, _) => IconButton.filled(
+                tooltip: photoBytes == null
+                    ? 'Tambah foto profil'
+                    : 'Ganti foto profil',
+                onPressed: isPicking
+                    ? null
+                    : () => _selectProfilePhoto(context),
+                style: IconButton.styleFrom(
+                  backgroundColor: AppTheme.accent,
+                  foregroundColor: AppTheme.onPrimary,
+                ),
+                icon: isPicking
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTheme.onPrimary,
+                        ),
+                      )
+                    : const Icon(Icons.camera_alt_outlined, size: 19),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-      final imageBytes = await image.readAsBytes();
-      if (mounted) setState(() => _profilePhotoBytes = imageBytes);
+  Future<void> _selectProfilePhoto(BuildContext context) async {
+    try {
+      await FotoProfilSiswaService.pilihDariGaleri();
     } catch (_) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Foto profil tidak dapat dibuka. Silakan coba lagi.'),
           ),
         );
       }
-    } finally {
-      if (mounted) setState(() => _isPickingPhoto = false);
     }
   }
 

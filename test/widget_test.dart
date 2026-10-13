@@ -12,6 +12,46 @@ void main() {
     expect(JadwalPklService.isHariWajib(DateTime(2026, 10, 11)), isFalse);
   });
 
+  test('periode PKL mengikuti tanggal mulai dan batas tiga bulan', () {
+    final startDate = DateTime(2027, 1, 15);
+    expect(
+      JadwalPklService.periodeKe(DateTime(2027, 1, 14), startDate),
+      isNull,
+    );
+    expect(JadwalPklService.periodeKe(DateTime(2027, 1, 15), startDate), 1);
+    expect(JadwalPklService.periodeKe(DateTime(2027, 2, 14), startDate), 1);
+    expect(JadwalPklService.periodeKe(DateTime(2027, 2, 15), startDate), 2);
+    expect(JadwalPklService.periodeKe(DateTime(2027, 3, 15), startDate), 3);
+    expect(
+      JadwalPklService.periodeKe(DateTime(2027, 4, 15), startDate),
+      isNull,
+    );
+  });
+
+  test('batas periode mengakomodasi akhir bulan dan tahun kabisat', () {
+    final januaryEnd = DateTime(2027, 1, 31);
+    expect(JadwalPklService.periodeKe(DateTime(2027, 2, 27), januaryEnd), 1);
+    expect(JadwalPklService.periodeKe(DateTime(2027, 2, 28), januaryEnd), 2);
+    expect(JadwalPklService.periodeKe(DateTime(2027, 3, 30), januaryEnd), 2);
+    expect(JadwalPklService.periodeKe(DateTime(2027, 3, 31), januaryEnd), 3);
+
+    final leapYearStart = DateTime(2024, 1, 31);
+    expect(JadwalPklService.periodeKe(DateTime(2024, 2, 28), leapYearStart), 1);
+    expect(JadwalPklService.periodeKe(DateTime(2024, 2, 29), leapYearStart), 2);
+  });
+
+  test('parser membaca tanggal jurnal lama berbahasa Indonesia', () {
+    expect(
+      JadwalPklService.parseTanggalJurnal('30 September 2026'),
+      DateTime(2026, 9, 30),
+    );
+    expect(
+      JadwalPklService.parseTanggalJurnal('2026-09-30'),
+      DateTime(2026, 9, 30),
+    );
+    expect(JadwalPklService.parseTanggalJurnal('31 Februari 2026'), isNull);
+  });
+
   testWidgets('form jurnal memungkinkan siswa memilih kelas', (
     WidgetTester tester,
   ) async {
@@ -115,11 +155,14 @@ void main() {
   testWidgets('guru dapat mencari jurnal dengan filter kelas dan status', (
     WidgetTester tester,
   ) async {
+    JadwalPklService.tanggalMulaiPkl = DateTime(2026, 9, 28);
+    addTearDown(() => JadwalPklService.tanggalMulaiPkl = null);
     await _openLogin(tester);
     await _loginAsGuru(tester);
 
     final searchField = find.byType(TextField).first;
     final filters = find.byType(DropdownButtonFormField<String>);
+    final statusFilter = filters.at(1);
     await tester.scrollUntilVisible(
       find.text('Riwayat Jurnal'),
       100,
@@ -140,9 +183,14 @@ void main() {
     await tester.tap(find.text('RPL').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(filters.last);
+    await tester.tap(statusFilter);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Disetujui').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(filters.last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bulan ke-1').last);
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
@@ -154,6 +202,30 @@ void main() {
     expect(find.text('Kelas: RPL'), findsOneWidget);
     expect(find.widgetWithText(Card, 'Siswa RPL 1'), findsNothing);
     expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
+
+    await tester.ensureVisible(filters.last);
+    await tester.tap(filters.last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bulan ke-2').last);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Jurnal tidak ditemukan'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Jurnal tidak ditemukan'), findsOneWidget);
+
+    await tester.ensureVisible(filters.last);
+    await tester.tap(filters.last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Semua Periode').last);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.widgetWithText(Card, 'Siswa RPL 2'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsOneWidget);
 
     await tester.ensureVisible(searchField);
     await tester.enterText(searchField, 'dOkumentasi');
@@ -181,6 +253,30 @@ void main() {
     expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsOneWidget);
     expect(find.widgetWithText(Card, 'Siswa RPL 1'), findsNothing);
     expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
+  });
+
+  testWidgets('filter periode menjelaskan konfigurasi tanggal mulai kosong', (
+    WidgetTester tester,
+  ) async {
+    JadwalPklService.tanggalMulaiPkl = null;
+    addTearDown(() => JadwalPklService.tanggalMulaiPkl = null);
+    await _openLogin(tester);
+    await _loginAsGuru(tester);
+
+    final periodFilter = find.byType(DropdownButtonFormField<String>).last;
+    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(periodFilter);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bulan ke-1').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Tanggal mulai PKL belum dikonfigurasi.'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Tanggal mulai PKL belum dikonfigurasi.'), findsOneWidget);
   });
 
   testWidgets('guru memisahkan jurnal pending dan riwayat', (
@@ -244,6 +340,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final filters = find.byType(DropdownButtonFormField<String>);
+    final statusFilter = filters.at(1);
     await tester.scrollUntilVisible(
       filters.first,
       100,
@@ -253,7 +350,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('RPL').last);
     await tester.pumpAndSettle();
-    await tester.tap(filters.last);
+    await tester.tap(statusFilter);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Pending').last);
     await tester.pumpAndSettle();

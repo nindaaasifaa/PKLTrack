@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/jurnal_model.dart';
 import '../../models/user_model.dart';
+import '../../services/jadwal_pkl_service.dart';
 import '../../services/jurnal_service.dart';
 import '../../theme/app_theme.dart';
 import 'profil_guru.dart';
@@ -21,10 +22,18 @@ class _DashboardGuruState extends State<DashboardGuru> {
   static const int _targetJurnal = 5;
   static const String _allClasses = 'Semua Kelas';
   static const String _allStatuses = 'Semua Status';
+  static const String _allPeriods = 'Semua Periode';
+  static const List<String> _periodOptions = [
+    _allPeriods,
+    'Bulan ke-1',
+    'Bulan ke-2',
+    'Bulan ke-3',
+  ];
   late List<JurnalModel> _jurnals;
   late final TextEditingController _searchController;
   String _selectedClass = _allClasses;
   String _selectedStatus = _allStatuses;
+  String _selectedPeriod = _allPeriods;
   bool _showHistory = false;
 
   @override
@@ -69,6 +78,20 @@ class _DashboardGuruState extends State<DashboardGuru> {
     final statusMatches =
         _selectedStatus == _allStatuses ||
         journalStatus == _selectedStatus.toLowerCase();
+    final periodNumber = switch (_selectedPeriod) {
+      'Bulan ke-1' => 1,
+      'Bulan ke-2' => 2,
+      'Bulan ke-3' => 3,
+      _ => null,
+    };
+    final startDate = JadwalPklService.tanggalMulaiPkl;
+    final activityDate = JadwalPklService.parseTanggalJurnal(journal.date);
+    final periodMatches =
+        periodNumber == null ||
+        (startDate != null &&
+            activityDate != null &&
+            JadwalPklService.periodeKe(activityDate, startDate) ==
+                periodNumber);
     final tabMatches = _showHistory
         ? journalStatus == 'disetujui' || journalStatus == 'ditolak'
         : journalStatus == 'pending';
@@ -78,7 +101,11 @@ class _DashboardGuruState extends State<DashboardGuru> {
         (journal.className?.toLowerCase().contains(query) ?? false) ||
         journal.activity.toLowerCase().contains(query);
 
-    return tabMatches && classMatches && statusMatches && queryMatches;
+    return tabMatches &&
+        classMatches &&
+        statusMatches &&
+        periodMatches &&
+        queryMatches;
   }
 
   @override
@@ -133,9 +160,9 @@ class _DashboardGuruState extends State<DashboardGuru> {
             _buildJournalTabs(),
             const SizedBox(height: 12),
             if (filteredJournalIndices.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(child: Text('Jurnal tidak ditemukan')),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Center(child: Text(_emptyJournalMessage)),
               )
             else
               ...filteredJournalIndices.map(
@@ -146,6 +173,11 @@ class _DashboardGuruState extends State<DashboardGuru> {
       ),
     );
   }
+
+  String get _emptyJournalMessage =>
+      _selectedPeriod != _allPeriods && JadwalPklService.tanggalMulaiPkl == null
+      ? 'Tanggal mulai PKL belum dikonfigurasi.'
+      : 'Jurnal tidak ditemukan';
 
   Widget _buildJournalTabs() {
     return SegmentedButton<bool>(
@@ -211,6 +243,29 @@ class _DashboardGuruState extends State<DashboardGuru> {
       );
     }
 
+    Widget periodFilter() {
+      return DropdownButtonFormField<String>(
+        initialValue: _selectedPeriod,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Periode PKL',
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+        items: _periodOptions
+            .map(
+              (period) => DropdownMenuItem(
+                value: period,
+                child: Text(period, overflow: TextOverflow.ellipsis),
+              ),
+            )
+            .toList(),
+        onChanged: (value) {
+          if (value != null) setState(() => _selectedPeriod = value);
+        },
+      );
+    }
+
     return Column(
       children: [
         TextField(
@@ -246,14 +301,22 @@ class _DashboardGuruState extends State<DashboardGuru> {
                   classFilter(),
                   const SizedBox(height: 10),
                   statusFilter(),
+                  const SizedBox(height: 10),
+                  periodFilter(),
                 ],
               );
             }
-            return Row(
+            return Column(
               children: [
-                Expanded(child: classFilter()),
-                const SizedBox(width: 10),
-                Expanded(child: statusFilter()),
+                Row(
+                  children: [
+                    Expanded(child: classFilter()),
+                    const SizedBox(width: 10),
+                    Expanded(child: statusFilter()),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                periodFilter(),
               ],
             );
           },

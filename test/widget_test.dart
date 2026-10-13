@@ -151,6 +151,7 @@ void main() {
     await tester.tap(find.byTooltip('Profil Siswa'));
     await tester.pumpAndSettle();
     expect(find.text('Profil Siswa'), findsOneWidget);
+    expect(find.byTooltip('Tambah foto profil'), findsOneWidget);
 
     await tester.tap(find.text('Logout'));
     await tester.pumpAndSettle();

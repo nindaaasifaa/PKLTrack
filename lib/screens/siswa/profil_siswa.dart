@@ -1,11 +1,22 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../theme/app_theme.dart';
 
-class ProfilSiswa extends StatelessWidget {
+class ProfilSiswa extends StatefulWidget {
   const ProfilSiswa({super.key});
 
+  @override
+  State<ProfilSiswa> createState() => _ProfilSiswaState();
+}
+
+class _ProfilSiswaState extends State<ProfilSiswa> {
   static const Color _blue = AppTheme.accent;
+  final ImagePicker _imagePicker = ImagePicker();
+  Uint8List? _profilePhotoBytes;
+  bool _isPickingPhoto = false;
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +37,52 @@ class ProfilSiswa extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppTheme.outline),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                CircleAvatar(
-                  radius: 34,
-                  backgroundColor: AppTheme.surface,
-                  child: Icon(Icons.person_outline, color: _blue, size: 36),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    CircleAvatar(
+                      radius: 34,
+                      backgroundColor: AppTheme.surface,
+                      backgroundImage: _profilePhotoBytes == null
+                          ? null
+                          : MemoryImage(_profilePhotoBytes!),
+                      child: _profilePhotoBytes == null
+                          ? const Icon(
+                              Icons.person_outline,
+                              color: _blue,
+                              size: 36,
+                            )
+                          : null,
+                    ),
+                    Positioned(
+                      right: -10,
+                      bottom: -10,
+                      child: IconButton.filled(
+                        tooltip: _profilePhotoBytes == null
+                            ? 'Tambah foto profil'
+                            : 'Ganti foto profil',
+                        onPressed: _isPickingPhoto ? null : _selectProfilePhoto,
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppTheme.accent,
+                          foregroundColor: AppTheme.onPrimary,
+                        ),
+                        icon: _isPickingPhoto
+                            ? const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppTheme.onPrimary,
+                                ),
+                              )
+                            : const Icon(Icons.camera_alt_outlined, size: 19),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(width: 16),
-                Expanded(
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -114,6 +162,27 @@ class ProfilSiswa extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _selectProfilePhoto() async {
+    setState(() => _isPickingPhoto = true);
+    try {
+      final image = await _imagePicker.pickImage(source: ImageSource.gallery);
+      if (image == null || !mounted) return;
+
+      final imageBytes = await image.readAsBytes();
+      if (mounted) setState(() => _profilePhotoBytes = imageBytes);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil tidak dapat dibuka. Silakan coba lagi.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isPickingPhoto = false);
+    }
   }
 
   Future<void> _confirmLogout(BuildContext context) async {

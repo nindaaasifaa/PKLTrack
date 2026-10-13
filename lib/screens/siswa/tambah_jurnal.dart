@@ -290,6 +290,7 @@ class _TambahJurnalState extends State<TambahJurnal> {
         status: 'Pending',
         className: _selectedClass!,
         imagePath: _selectedImage?.path,
+        imageBytes: _selectedImageBytes,
       ),
     );
     ScaffoldMessenger.of(

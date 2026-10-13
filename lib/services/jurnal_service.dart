@@ -46,6 +46,7 @@ class JurnalService {
       studentName: jurnal.studentName,
       className: jurnal.className,
       imagePath: jurnal.imagePath,
+      imageBytes: jurnal.imageBytes,
       comment: comment,
     );
   }

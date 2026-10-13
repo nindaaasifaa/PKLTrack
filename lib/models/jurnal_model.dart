@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 class JurnalModel {
   const JurnalModel({
     required this.date,
@@ -6,6 +8,7 @@ class JurnalModel {
     this.studentName = 'Siswa PKL',
     this.className,
     this.imagePath,
+    this.imageBytes,
     this.comment = '',
   });
 
@@ -15,5 +18,6 @@ class JurnalModel {
   final String studentName;
   final String? className;
   final String? imagePath;
+  final Uint8List? imageBytes;
   final String comment;
 }

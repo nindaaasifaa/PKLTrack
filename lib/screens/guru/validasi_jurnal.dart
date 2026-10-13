@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/jurnal_model.dart';
@@ -37,8 +38,6 @@ class _ValidasiJurnalState extends State<ValidasiJurnal> {
 
   @override
   Widget build(BuildContext context) {
-    final imagePath = widget.jurnal.imagePath;
-
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
@@ -77,43 +76,7 @@ class _ValidasiJurnalState extends State<ValidasiJurnal> {
               ),
             ),
             const SizedBox(height: 14),
-            _buildSection(
-              title: 'Foto Dokumentasi',
-              child: imagePath == null
-                  ? Container(
-                      height: 170,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.image_outlined,
-                            size: 38,
-                            color: AppTheme.accent,
-                          ),
-                          SizedBox(height: 8),
-                          Text('Tidak ada foto dokumentasi'),
-                        ],
-                      ),
-                    )
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.file(
-                        File(imagePath),
-                        height: 200,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox(
-                              height: 170,
-                              child: Center(child: Text('Foto tidak tersedia')),
-                            ),
-                      ),
-                    ),
-            ),
+            _buildSection(title: 'Foto Dokumentasi', child: _buildPhoto()),
             const SizedBox(height: 14),
             _buildSection(
               title: 'Komentar Guru',
@@ -162,6 +125,72 @@ class _ValidasiJurnalState extends State<ValidasiJurnal> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhoto() {
+    final imageBytes = widget.jurnal.imageBytes;
+    if (imageBytes != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.memory(
+          imageBytes,
+          height: 200,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const SizedBox(
+            height: 170,
+            child: Center(child: Text('Foto tidak tersedia')),
+          ),
+        ),
+      );
+    }
+
+    final imagePath = widget.jurnal.imagePath;
+    if (imagePath == null) {
+      return Container(
+        height: 170,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppTheme.primaryContainer,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.image_outlined, size: 38, color: AppTheme.accent),
+            SizedBox(height: 8),
+            Text('Tidak ada foto dokumentasi'),
+          ],
+        ),
+      );
+    }
+
+    if (kIsWeb) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.network(
+          imagePath,
+          height: 200,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const SizedBox(
+            height: 170,
+            child: Center(child: Text('Foto tidak tersedia')),
+          ),
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Image.file(
+        File(imagePath),
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const SizedBox(
+          height: 170,
+          child: Center(child: Text('Foto tidak tersedia')),
         ),
       ),
     );

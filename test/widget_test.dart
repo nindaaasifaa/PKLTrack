@@ -1,6 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_1/main.dart';
+import 'package:flutter_application_1/models/jurnal_model.dart';
+import 'package:flutter_application_1/screens/guru/validasi_jurnal.dart';
 import 'package:flutter_application_1/screens/siswa/tambah_jurnal.dart';
 import 'package:flutter_application_1/services/jadwal_pkl_service.dart';
 
@@ -81,6 +85,27 @@ void main() {
     expect(find.text('LOGIN'), findsOneWidget);
     expect(find.text('Halo, Siswa!'), findsNothing);
     expect(find.text('Halo, Guru!'), findsNothing);
+  });
+
+  testWidgets('validasi guru menampilkan foto jurnal dari bytes', (
+    WidgetTester tester,
+  ) async {
+    final imageBytes = Uint8List.fromList([1, 2, 3, 4]);
+    final journal = JurnalModel(
+      date: '14 Oktober 2026',
+      activity: 'Membuat aplikasi sederhana',
+      status: 'Pending',
+      imagePath: 'blob:foto-dokumentasi',
+      imageBytes: imageBytes,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(home: ValidasiJurnal(jurnalIndex: 0, jurnal: journal)),
+    );
+
+    final image = tester.widget<Image>(find.byType(Image));
+    expect(image.image, isA<MemoryImage>());
+    expect((image.image as MemoryImage).bytes, same(imageBytes));
   });
 
   testWidgets('login dengan akun demo membuka dashboard siswa', (

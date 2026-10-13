@@ -19,12 +19,51 @@ class DashboardGuru extends StatefulWidget {
 class _DashboardGuruState extends State<DashboardGuru> {
   static const Color _blue = AppTheme.accent;
   static const int _targetJurnal = 5;
+  static const String _allClasses = 'Semua Kelas';
+  static const String _allStatuses = 'Semua Status';
   late List<JurnalModel> _jurnals;
+  late final TextEditingController _searchController;
+  String _selectedClass = _allClasses;
+  String _selectedStatus = _allStatuses;
 
   @override
   void initState() {
     super.initState();
     _jurnals = JurnalService.semuaJurnal;
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<String> get _classes {
+    final classes =
+        _jurnals
+            .map((journal) => journal.className)
+            .whereType<String>()
+            .where((className) => className.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+    return classes;
+  }
+
+  List<int> get _filteredJournalIndices {
+    final query = _searchController.text.trim().toLowerCase();
+    return [
+      for (var index = 0; index < _jurnals.length; index++)
+        if ((_selectedClass == _allClasses ||
+                _jurnals[index].className == _selectedClass) &&
+            (_selectedStatus == _allStatuses ||
+                _jurnals[index].status == _selectedStatus) &&
+            (query.isEmpty ||
+                _jurnals[index].studentName.toLowerCase().contains(query) ||
+                _jurnals[index].activity.toLowerCase().contains(query)))
+          index,
+    ];
   }
 
   @override
@@ -73,18 +112,123 @@ class _DashboardGuruState extends State<DashboardGuru> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
+            _buildJournalFilters(),
+            const SizedBox(height: 12),
             if (_jurnals.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
                 child: Center(child: Text('Belum ada jurnal siswa.')),
               )
+            else if (_filteredJournalIndices.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text('Tidak ada jurnal yang sesuai dengan filter.'),
+                ),
+              )
             else
-              ..._jurnals.asMap().entries.map(
-                (entry) => _buildJournalCard(entry.key, entry.value),
+              ..._filteredJournalIndices.map(
+                (index) => _buildJournalCard(index, _jurnals[index]),
               ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildJournalFilters() {
+    final classes = [_allClasses, ..._classes];
+    const statuses = [_allStatuses, 'Pending', 'Disetujui', 'Ditolak'];
+
+    Widget classFilter() {
+      return DropdownButtonFormField<String>(
+        initialValue: _selectedClass,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Kelas',
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+        items: classes
+            .map(
+              (className) => DropdownMenuItem(
+                value: className,
+                child: Text(className, overflow: TextOverflow.ellipsis),
+              ),
+            )
+            .toList(),
+        onChanged: (value) {
+          if (value != null) setState(() => _selectedClass = value);
+        },
+      );
+    }
+
+    Widget statusFilter() {
+      return DropdownButtonFormField<String>(
+        initialValue: _selectedStatus,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Status',
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+        items: statuses
+            .map(
+              (status) => DropdownMenuItem(
+                value: status,
+                child: Text(status, overflow: TextOverflow.ellipsis),
+              ),
+            )
+            .toList(),
+        onChanged: (value) {
+          if (value != null) setState(() => _selectedStatus = value);
+        },
+      );
+    }
+
+    return Column(
+      children: [
+        TextField(
+          controller: _searchController,
+          onChanged: (_) => setState(() {}),
+          decoration: InputDecoration(
+            hintText: 'Cari nama siswa atau kegiatan jurnal',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _searchController.text.isEmpty
+                ? null
+                : IconButton(
+                    tooltip: 'Hapus pencarian',
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {});
+                    },
+                  ),
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 10),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < 440) {
+              return Column(
+                children: [
+                  classFilter(),
+                  const SizedBox(height: 10),
+                  statusFilter(),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: classFilter()),
+                const SizedBox(width: 10),
+                Expanded(child: statusFilter()),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 

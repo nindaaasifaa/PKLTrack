@@ -83,8 +83,58 @@ void main() {
     expect(find.text('Halo, Guru!'), findsOneWidget);
     expect(find.text('Jumlah Jurnal Siswa'), findsOneWidget);
     expect(find.text('Progress Pengisian Jurnal'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Lihat & Validasi'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Lihat & Validasi'), findsWidgets);
     expect(find.byTooltip('Profil Guru'), findsOneWidget);
+  });
+
+  testWidgets('guru dapat mencari jurnal dengan filter kelas dan status', (
+    WidgetTester tester,
+  ) async {
+    await _openLogin(tester);
+    await _loginAsGuru(tester);
+
+    final searchField = find.byType(TextField).first;
+    final filters = find.byType(DropdownButtonFormField<String>);
+    await tester.enterText(searchField, 'Siswa');
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+    await tester.pumpAndSettle();
+    await tester.tap(filters.first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('RPL').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(filters.last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pending').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(Card, 'Siswa RPL 1'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.widgetWithText(Card, 'Siswa RPL 1'), findsOneWidget);
+    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsNothing);
+    expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
+
+    await tester.ensureVisible(searchField);
+    await tester.enterText(searchField, 'pemeriksaan');
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Membantu pemeriksaan perangkat komputer'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(Card, 'Siswa RPL 2'), findsNothing);
+    expect(find.widgetWithText(Card, 'Siswa TKJ 1'), findsNothing);
   });
 
   testWidgets('admin dapat membuka menu dan memfilter laporan jurnal', (
@@ -205,7 +255,7 @@ void main() {
     await _loginAsGuru(tester);
 
     final validationButton = find.text('Lihat & Validasi').first;
-    await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+    await tester.drag(find.byType(ListView).first, const Offset(0, -500));
     await tester.pumpAndSettle();
     await tester.tap(validationButton);
     await tester.pumpAndSettle();
@@ -227,7 +277,7 @@ void main() {
     expect(find.text('0'), findsWidgets);
 
     final updatedValidationButton = find.text('Lihat & Validasi').first;
-    await tester.drag(find.byType(ListView).first, const Offset(0, -200));
+    await tester.drag(find.byType(ListView).first, const Offset(0, -500));
     await tester.pumpAndSettle();
     await tester.tap(updatedValidationButton);
     await tester.pumpAndSettle();

@@ -598,7 +598,8 @@ void main() {
     expect(find.text('Bapak/Ibu Guru'), findsOneWidget);
     expect(find.text('Username'), findsOneWidget);
     expect(find.text('guru'), findsOneWidget);
-    expect(find.text('Role: Guru'), findsOneWidget);
+    expect(find.text('Akun Guru'), findsOneWidget);
+    expect(find.text('Role'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Logout'));
     await tester.pumpAndSettle();

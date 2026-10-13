@@ -23,39 +23,84 @@ class ProfilGuru extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(12),
+              color: AppTheme.primaryContainer,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.outline),
             ),
-            child: Column(
+            child: Row(
               children: [
                 const CircleAvatar(
-                  radius: 38,
-                  backgroundColor: AppTheme.primaryContainer,
-                  child: Icon(Icons.person, color: _blue, size: 40),
+                  radius: 34,
+                  backgroundColor: AppTheme.surface,
+                  child: Icon(Icons.person_outline, color: _blue, size: 36),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'PROFIL GURU',
+                        style: TextStyle(
+                          color: AppTheme.muted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        user.name,
+                        style: const TextStyle(
+                          color: AppTheme.onSurface,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Akun Guru',
+                        style: TextStyle(color: AppTheme.muted),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Role: Guru',
-                  style: TextStyle(color: AppTheme.muted),
-                ),
-                const Divider(height: 28),
-                _ProfileInfo(label: 'Username', value: user.username),
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
+          const Text(
+            'Informasi Akun',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.outline),
+            ),
+            child: Column(
+              children: [
+                _ProfileInfo(
+                  icon: Icons.alternate_email,
+                  label: 'Username',
+                  value: user.username,
+                ),
+                const Divider(height: 1),
+                const _ProfileInfo(
+                  icon: Icons.badge_outlined,
+                  label: 'Role',
+                  value: 'Guru',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           SizedBox(
-            height: 50,
+            height: 52,
             child: OutlinedButton.icon(
               onPressed: () => _confirmLogout(context),
               icon: const Icon(Icons.logout),
@@ -100,19 +145,28 @@ class ProfilGuru extends StatelessWidget {
 }
 
 class _ProfileInfo extends StatelessWidget {
-  const _ProfileInfo({required this.label, required this.value});
+  const _ProfileInfo({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
+  final IconData icon;
   final String label;
   final String value;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 15),
+    child: Row(
       children: [
-        Text(label, style: const TextStyle(color: AppTheme.muted)),
+        Icon(icon, size: 20, color: AppTheme.accent),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(label, style: const TextStyle(color: AppTheme.muted)),
+        ),
         Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
       ],
-    );
-  }
+    ),
+  );
 }

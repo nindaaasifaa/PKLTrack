@@ -20,33 +20,84 @@ class ProfilSiswa extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(12),
+              color: AppTheme.primaryContainer,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.outline),
             ),
-            child: const Column(
+            child: const Row(
               children: [
                 CircleAvatar(
-                  radius: 36,
-                  backgroundColor: AppTheme.primaryContainer,
-                  child: Icon(Icons.person, color: _blue, size: 38),
+                  radius: 34,
+                  backgroundColor: AppTheme.surface,
+                  child: Icon(Icons.person_outline, color: _blue, size: 36),
                 ),
-                SizedBox(height: 12),
-                Text(
-                  'Siswa PKL',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'PROFIL SISWA',
+                        style: TextStyle(
+                          color: AppTheme.muted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Siswa PKL',
+                        style: TextStyle(
+                          color: AppTheme.onSurface,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Akun Siswa',
+                        style: TextStyle(color: AppTheme.muted),
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 4),
-                Text('Role: Siswa', style: TextStyle(color: AppTheme.muted)),
-                Divider(height: 28),
-                _ProfileInfo(label: 'Username', value: 'siswa'),
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
+          const Text(
+            'Informasi Akun',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.outline),
+            ),
+            child: const Column(
+              children: [
+                _ProfileInfo(
+                  icon: Icons.alternate_email,
+                  label: 'Username',
+                  value: 'siswa',
+                ),
+                Divider(height: 1),
+                _ProfileInfo(
+                  icon: Icons.school_outlined,
+                  label: 'Jenis akun',
+                  value: 'Siswa',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           SizedBox(
-            height: 50,
+            height: 52,
             child: OutlinedButton.icon(
               onPressed: () => _confirmLogout(context),
               icon: const Icon(Icons.logout),
@@ -91,19 +142,30 @@ class ProfilSiswa extends StatelessWidget {
 }
 
 class _ProfileInfo extends StatelessWidget {
-  const _ProfileInfo({required this.label, required this.value});
+  const _ProfileInfo({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
+  final IconData icon;
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(color: AppTheme.muted)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 15),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppTheme.accent),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(label, style: const TextStyle(color: AppTheme.muted)),
+          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ],
+      ),
     );
   }
 }

@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/jurnal_model.dart';
 import '../../models/user_model.dart';
+import '../../services/foto_profil_guru_service.dart';
 import '../../services/jadwal_pkl_service.dart';
 import '../../services/jurnal_service.dart';
 import '../../theme/app_theme.dart';
@@ -118,17 +120,46 @@ class _DashboardGuruState extends State<DashboardGuru> {
         backgroundColor: AppTheme.primary,
         foregroundColor: AppTheme.onPrimary,
         actions: [
-          IconButton(
-            tooltip: 'Profil Guru',
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => ProfilGuru(user: widget.user),
-                ),
-              );
-            },
+          ValueListenableBuilder<bool>(
+            valueListenable: FotoProfilGuruService.sedangMemilih,
+            builder: (context, isPicking, _) => IconButton(
+              tooltip: 'Tambah atau ganti foto profil Guru',
+              onPressed: isPicking ? null : _selectProfilePhoto,
+              icon: isPicking
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.camera_alt_outlined),
+            ),
+          ),
+          ValueListenableBuilder<Uint8List?>(
+            valueListenable: FotoProfilGuruService.fotoBytes,
+            builder: (context, photoBytes, _) => IconButton(
+              tooltip: 'Profil Guru',
+              icon: CircleAvatar(
+                radius: 14,
+                backgroundColor: AppTheme.surface,
+                backgroundImage: photoBytes == null
+                    ? null
+                    : MemoryImage(photoBytes),
+                child: photoBytes == null
+                    ? const Icon(
+                        Icons.person_outline,
+                        size: 19,
+                        color: AppTheme.onPrimary,
+                      )
+                    : null,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => ProfilGuru(user: widget.user),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -528,6 +559,20 @@ class _DashboardGuruState extends State<DashboardGuru> {
         ),
       ),
     );
+  }
+
+  Future<void> _selectProfilePhoto() async {
+    try {
+      await FotoProfilGuruService.pilihDariGaleri();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil tidak dapat dibuka. Silakan coba lagi.'),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _openValidation(int index, JurnalModel journal) async {

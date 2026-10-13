@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
+import '../../services/foto_profil_guru_service.dart';
 import '../../theme/app_theme.dart';
 
 class ProfilGuru extends StatelessWidget {
@@ -31,11 +33,7 @@ class ProfilGuru extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const CircleAvatar(
-                  radius: 34,
-                  backgroundColor: AppTheme.surface,
-                  child: Icon(Icons.person_outline, color: _blue, size: 36),
-                ),
+                _buildPhotoAvatar(context),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -117,6 +115,69 @@ class ProfilGuru extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildPhotoAvatar(BuildContext context) {
+    return ValueListenableBuilder<Uint8List?>(
+      valueListenable: FotoProfilGuruService.fotoBytes,
+      builder: (context, photoBytes, _) => Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CircleAvatar(
+            radius: 34,
+            backgroundColor: AppTheme.surface,
+            backgroundImage: photoBytes == null
+                ? null
+                : MemoryImage(photoBytes),
+            child: photoBytes == null
+                ? const Icon(Icons.person_outline, color: _blue, size: 36)
+                : null,
+          ),
+          Positioned(
+            right: -10,
+            bottom: -10,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: FotoProfilGuruService.sedangMemilih,
+              builder: (context, isPicking, _) => IconButton.filled(
+                tooltip: photoBytes == null
+                    ? 'Tambah foto profil guru'
+                    : 'Ganti foto profil guru',
+                onPressed: isPicking
+                    ? null
+                    : () => _selectProfilePhoto(context),
+                style: IconButton.styleFrom(
+                  backgroundColor: AppTheme.accent,
+                  foregroundColor: AppTheme.onPrimary,
+                ),
+                icon: isPicking
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTheme.onPrimary,
+                        ),
+                      )
+                    : const Icon(Icons.camera_alt_outlined, size: 19),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectProfilePhoto(BuildContext context) async {
+    try {
+      await FotoProfilGuruService.pilihDariGaleri();
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil tidak dapat dibuka. Silakan coba lagi.'),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _confirmLogout(BuildContext context) async {

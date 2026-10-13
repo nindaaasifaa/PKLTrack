@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_1/main.dart';
 import 'package:flutter_application_1/models/jurnal_model.dart';
+import 'package:flutter_application_1/services/foto_profil_guru_service.dart';
 import 'package:flutter_application_1/services/foto_profil_siswa_service.dart';
 import 'package:flutter_application_1/screens/guru/validasi_jurnal.dart';
 import 'package:flutter_application_1/screens/siswa/tambah_jurnal.dart';
@@ -344,6 +345,35 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Tanggal mulai PKL belum dikonfigurasi.'), findsOneWidget);
+  });
+
+  testWidgets('foto profil guru tampil di dashboard dan profil', (
+    WidgetTester tester,
+  ) async {
+    final photoBytes = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfS8AAAAASUVORK5CYII=',
+    );
+    FotoProfilGuruService.fotoBytes.value = photoBytes;
+    addTearDown(() => FotoProfilGuruService.fotoBytes.value = null);
+
+    await _openLogin(tester);
+    await _loginAsGuru(tester);
+
+    expect(
+      find.byTooltip('Tambah atau ganti foto profil Guru'),
+      findsOneWidget,
+    );
+    final dashboardAvatar = tester.widget<CircleAvatar>(
+      find.descendant(
+        of: find.byTooltip('Profil Guru'),
+        matching: find.byType(CircleAvatar),
+      ),
+    );
+    expect(dashboardAvatar.backgroundImage, isA<MemoryImage>());
+
+    await tester.tap(find.byTooltip('Profil Guru'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Ganti foto profil guru'), findsOneWidget);
   });
 
   testWidgets('guru memisahkan jurnal pending dan riwayat', (

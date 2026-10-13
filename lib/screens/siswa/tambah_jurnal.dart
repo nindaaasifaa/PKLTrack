@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -37,6 +37,7 @@ class _TambahJurnalState extends State<TambahJurnal> {
   DateTime? _selectedDate;
   String? _selectedClass;
   XFile? _selectedImage;
+  Uint8List? _selectedImageBytes;
   bool _isPickingImage = false;
   bool _isSaving = false;
 
@@ -185,11 +186,11 @@ class _TambahJurnalState extends State<TambahJurnal> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (field.value != null) ...[
+            if (field.value != null && _selectedImageBytes != null) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.file(
-                  File(field.value!.path),
+                child: Image.memory(
+                  _selectedImageBytes!,
                   height: 190,
                   fit: BoxFit.cover,
                 ),
@@ -254,8 +255,13 @@ class _TambahJurnalState extends State<TambahJurnal> {
     try {
       final image = await _imagePicker.pickImage(source: ImageSource.gallery);
       if (image != null && mounted) {
+        final imageBytes = await image.readAsBytes();
+        if (!mounted) return;
         field.didChange(image);
-        _selectedImage = image;
+        setState(() {
+          _selectedImage = image;
+          _selectedImageBytes = imageBytes;
+        });
       }
     } catch (_) {
       if (mounted) {

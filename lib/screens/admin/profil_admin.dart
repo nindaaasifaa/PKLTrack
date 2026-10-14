@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
+import '../../services/foto_profil_admin_service.dart';
 import '../../theme/app_theme.dart';
 
 class ProfilAdmin extends StatelessWidget {
@@ -19,41 +21,164 @@ class ProfilAdmin extends StatelessWidget {
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Card(
-          color: AppTheme.surface,
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                const CircleAvatar(
-                  radius: 38,
-                  child: Icon(Icons.person, size: 40),
+        Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryContainer,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.outline),
+          ),
+          child: Row(
+            children: [
+              _buildPhotoAvatar(context),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'PROFIL ADMIN',
+                      style: TextStyle(
+                        color: AppTheme.muted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      user.name,
+                      style: const TextStyle(
+                        color: AppTheme.onSurface,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      'Admin / Staf TIK',
+                      style: TextStyle(color: AppTheme.muted),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _ProfileInfo(label: 'Username', value: user.username),
-                const Divider(height: 24),
-                const _ProfileInfo(label: 'Role', value: 'Admin / Staf TIK'),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: () => konfirmasiLogout(context),
-          icon: const Icon(Icons.logout),
-          label: const Text('Logout'),
+        const SizedBox(height: 24),
+        const Text(
+          'Informasi Akun',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.outline),
+          ),
+          child: Column(
+            children: [
+              _ProfileInfo(
+                icon: Icons.alternate_email,
+                label: 'Username',
+                value: user.username,
+              ),
+              const Divider(height: 1),
+              const _ProfileInfo(
+                icon: Icons.admin_panel_settings_outlined,
+                label: 'Role',
+                value: 'Admin / Staf TIK',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          height: 52,
+          child: OutlinedButton.icon(
+            onPressed: () => konfirmasiLogout(context),
+            icon: const Icon(Icons.logout),
+            label: const Text('Logout'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red.shade700,
+              side: BorderSide(color: Colors.red.shade300),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
         ),
       ],
     ),
   );
+
+  Widget _buildPhotoAvatar(BuildContext context) {
+    return ValueListenableBuilder<Uint8List?>(
+      valueListenable: FotoProfilAdminService.fotoBytes,
+      builder: (context, photoBytes, _) => Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CircleAvatar(
+            radius: 34,
+            backgroundColor: AppTheme.surface,
+            backgroundImage: photoBytes == null
+                ? null
+                : MemoryImage(photoBytes),
+            child: photoBytes == null
+                ? const Icon(
+                    Icons.person_outline,
+                    color: AppTheme.accent,
+                    size: 36,
+                  )
+                : null,
+          ),
+          Positioned(
+            right: -10,
+            bottom: -10,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: FotoProfilAdminService.sedangMemilih,
+              builder: (context, isPicking, _) => IconButton.filled(
+                tooltip: photoBytes == null
+                    ? 'Tambah foto profil admin'
+                    : 'Ganti foto profil admin',
+                onPressed: isPicking
+                    ? null
+                    : () => _selectProfilePhoto(context),
+                style: IconButton.styleFrom(
+                  backgroundColor: AppTheme.accent,
+                  foregroundColor: AppTheme.onPrimary,
+                ),
+                icon: isPicking
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTheme.onPrimary,
+                        ),
+                      )
+                    : const Icon(Icons.camera_alt_outlined, size: 19),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectProfilePhoto(BuildContext context) async {
+    try {
+      await FotoProfilAdminService.pilihDariGaleri();
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil tidak dapat dibuka. Silakan coba lagi.'),
+          ),
+        );
+      }
+    }
+  }
 
   static Future<void> konfirmasiLogout(BuildContext context) async {
     final shouldLogout = await showDialog<bool>(
@@ -80,17 +205,28 @@ class ProfilAdmin extends StatelessWidget {
 }
 
 class _ProfileInfo extends StatelessWidget {
-  const _ProfileInfo({required this.label, required this.value});
+  const _ProfileInfo({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
+  final IconData icon;
   final String label;
   final String value;
 
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(label, style: const TextStyle(color: AppTheme.muted)),
-      Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-    ],
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 15),
+    child: Row(
+      children: [
+        Icon(icon, size: 20, color: AppTheme.accent),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(label, style: const TextStyle(color: AppTheme.muted)),
+        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+      ],
+    ),
   );
 }

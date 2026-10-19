@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'services/nama_profil_siswa_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/splash_screen.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NamaProfilSiswaService.inisialisasi();
   runApp(const PKLTrackApp());
 }
 

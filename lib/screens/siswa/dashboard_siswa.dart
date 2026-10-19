@@ -5,6 +5,7 @@ import '../../models/jurnal_model.dart';
 import '../../services/jadwal_pkl_service.dart';
 import '../../services/foto_profil_siswa_service.dart';
 import '../../services/jurnal_service.dart';
+import '../../services/nama_profil_siswa_service.dart';
 import '../../theme/app_theme.dart';
 import 'detail_jurnal.dart';
 import 'profil_siswa.dart';
@@ -86,9 +87,15 @@ class _DashboardSiswaState extends State<DashboardSiswa> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            const Text(
-              'Halo, Siswa!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ValueListenableBuilder<String>(
+              valueListenable: NamaProfilSiswaService.nama,
+              builder: (context, name, _) => Text(
+                'Halo, $name!',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const SizedBox(height: 4),
             const Text(

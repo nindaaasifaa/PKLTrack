@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../models/user_model.dart';
+import '../../services/nama_profil_akun_service.dart';
 import '../../services/nama_profil_siswa_service.dart';
 import '../../theme/app_theme.dart';
 import '../admin/dashboard_admin.dart';
@@ -54,10 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final account = _demoAccounts[username] ??
-      (username == NamaProfilSiswaService.username.value
-        ? _demoAccounts['siswa']
-        : null);
+    final account = _accountForUsername(username);
     if (account == null || password != account.password) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Username atau password salah')),
@@ -79,6 +77,19 @@ class _LoginScreenState extends State<LoginScreen> {
       context,
       MaterialPageRoute<void>(builder: (_) => dashboard),
     );
+  }
+
+  _DemoAccount? _accountForUsername(String username) {
+    if (username == NamaProfilSiswaService.username.value) {
+      return _demoAccounts['siswa'];
+    }
+    if (username == NamaProfilAkunService.usernameUntukRole('guru').value) {
+      return _demoAccounts['guru'];
+    }
+    if (username == NamaProfilAkunService.usernameUntukRole('admin').value) {
+      return _demoAccounts['admin'];
+    }
+    return null;
   }
 
   Widget? _dashboardForUser(UserModel user) {

@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'nama_profil_akun_service.dart';
+
 class NamaProfilSiswaService {
   NamaProfilSiswaService._();
 
   static const String _keyNama = 'nama_profil_siswa';
   static const String _keyUsername = 'username_profil_siswa';
-  static const Set<String> _reservedUsernames = {'guru', 'admin'};
   static final ValueNotifier<String> nama = ValueNotifier('Siswa PKL');
   static final ValueNotifier<String> username = ValueNotifier('siswa');
 
@@ -36,7 +37,10 @@ class NamaProfilSiswaService {
     if (newUsername.isEmpty || newUsername.contains(RegExp(r'\s'))) {
       throw ArgumentError('Username tidak valid.');
     }
-    if (_reservedUsernames.contains(newUsername.toLowerCase())) {
+    if (newUsername.toLowerCase() ==
+        NamaProfilAkunService.usernameGuru.value.toLowerCase() ||
+      newUsername.toLowerCase() ==
+        NamaProfilAkunService.usernameAdmin.value.toLowerCase()) {
       throw ArgumentError('Username sudah digunakan.');
     }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../services/admin_data_service.dart';
 import '../../services/jurnal_service.dart';
+import '../../services/nama_profil_akun_service.dart';
 import '../../theme/app_theme.dart';
 import 'jurnal_admin.dart';
 import 'kelola_kelas.dart';
@@ -43,9 +44,12 @@ class DashboardAdmin extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(
-            'Halo, ${user.name}',
-            style: const TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+          ValueListenableBuilder<String>(
+            valueListenable: NamaProfilAkunService.untukRole(user.role),
+            builder: (context, name, _) => Text(
+              'Halo, $name',
+              style: const TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 4),
           const Text(

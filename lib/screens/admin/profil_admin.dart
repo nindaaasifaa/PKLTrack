@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
 import '../../services/foto_profil_admin_service.dart';
+import '../../services/nama_profil_akun_service.dart';
 import '../../theme/app_theme.dart';
 
 class ProfilAdmin extends StatelessWidget {
@@ -45,13 +46,30 @@ class ProfilAdmin extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    Text(
-                      user.name,
-                      style: const TextStyle(
-                        color: AppTheme.onSurface,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ValueListenableBuilder<String>(
+                            valueListenable:
+                                NamaProfilAkunService.untukRole(user.role),
+                            builder: (context, name, _) => Text(
+                              name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppTheme.onSurface,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Ubah nama',
+                          onPressed: () => _editName(context),
+                          icon: const Icon(Icons.edit_outlined),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 5),
                     const Text(
@@ -79,10 +97,19 @@ class ProfilAdmin extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _ProfileInfo(
-                icon: Icons.alternate_email,
-                label: 'Username',
-                value: user.username,
+              ValueListenableBuilder<String>(
+                valueListenable:
+                    NamaProfilAkunService.usernameUntukRole(user.role),
+                builder: (context, username, _) => _ProfileInfo(
+                  icon: Icons.alternate_email,
+                  label: 'Username',
+                  value: username,
+                  trailing: IconButton(
+                    tooltip: 'Ubah username',
+                    onPressed: () => _editUsername(context),
+                    icon: const Icon(Icons.edit_outlined),
+                  ),
+                ),
               ),
               const Divider(height: 1),
               const _ProfileInfo(
@@ -112,6 +139,124 @@ class ProfilAdmin extends StatelessWidget {
       ],
     ),
   );
+
+  Future<void> _editName(BuildContext context) async {
+    final formKey = GlobalKey<FormState>();
+    final controller = TextEditingController(
+      text: NamaProfilAkunService.untukRole(user.role).value,
+    );
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Ubah Nama Profil'),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(labelText: 'Nama admin'),
+            validator: (value) => value == null || value.trim().isEmpty
+                ? 'Nama wajib diisi.'
+                : null,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(dialogContext, controller.text.trim());
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    if (newName == null || !context.mounted) return;
+    try {
+      await NamaProfilAkunService.ubahNama(user.role, newName);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nama berhasil diperbarui.')),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nama gagal disimpan. Silakan coba lagi.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _editUsername(BuildContext context) async {
+    final formKey = GlobalKey<FormState>();
+    final controller = TextEditingController(
+      text: NamaProfilAkunService.usernameUntukRole(user.role).value,
+    );
+    final newUsername = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Ubah Username'),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Username baru'),
+            validator: (value) {
+              final username = value?.trim() ?? '';
+              if (username.isEmpty) return 'Username wajib diisi.';
+              if (username.contains(RegExp(r'\s'))) {
+                return 'Username tidak boleh mengandung spasi.';
+              }
+              return null;
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(dialogContext, controller.text.trim());
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    if (newUsername == null || !context.mounted) return;
+    try {
+      await NamaProfilAkunService.ubahUsername(user.role, newUsername);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Username berhasil diperbarui.')),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Username gagal disimpan. Silakan coba lagi.'),
+          ),
+        );
+      }
+    }
+  }
 
   Widget _buildPhotoAvatar(BuildContext context) {
     return ValueListenableBuilder<Uint8List?>(
@@ -209,11 +354,13 @@ class _ProfileInfo extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.trailing,
   });
 
   final IconData icon;
   final String label;
   final String value;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -225,7 +372,14 @@ class _ProfileInfo extends StatelessWidget {
         Expanded(
           child: Text(label, style: const TextStyle(color: AppTheme.muted)),
         ),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        if (trailing != null) trailing!,
       ],
     ),
   );

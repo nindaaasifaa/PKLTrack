@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'services/nama_profil_akun_service.dart';
 import 'services/nama_profil_siswa_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/splash_screen.dart';
@@ -8,6 +9,7 @@ import 'theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NamaProfilSiswaService.inisialisasi();
+  await NamaProfilAkunService.inisialisasi();
   runApp(const PKLTrackApp());
 }
 

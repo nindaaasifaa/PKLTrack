@@ -226,13 +226,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Demo siswa: siswa / 123456  |  guru: guru / guru123',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: AppTheme.muted),
-                  ),
-
                   const SizedBox(height: 24),
 
                   const Text(

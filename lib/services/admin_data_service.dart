@@ -1,8 +1,13 @@
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/user_model.dart';
 
 class AdminDataService {
   AdminDataService._();
 
+  static const String _usersKey = 'admin_managed_users';
   static final List<String> kelas = ['RPL', 'TKJ'];
 
   static final List<UserModel> _users = [
@@ -35,16 +40,54 @@ class AdminDataService {
     ),
   ];
 
+  static Future<void> initialize() async {
+    final preferences = await SharedPreferences.getInstance();
+    final savedUsers = preferences.getString(_usersKey);
+    if (savedUsers == null) return;
+
+    try {
+      final decoded = jsonDecode(savedUsers) as List<dynamic>;
+      final users = decoded
+          .map((value) => UserModel.fromJson(value as Map<String, dynamic>))
+          .toList();
+      _users
+        ..clear()
+        ..addAll(users);
+    } on FormatException {
+      await preferences.remove(_usersKey);
+    } on TypeError {
+      await preferences.remove(_usersKey);
+    }
+  }
+
   static List<UserModel> get users => List.unmodifiable(_users);
 
   static List<UserModel> get students =>
       _users.where((user) => user.role == 'siswa').toList(growable: false);
 
-  static void addUser(UserModel user) => _users.add(user);
+  static Future<void> addUser(UserModel user) async {
+    _users.add(user);
+    await _saveUsers();
+  }
 
-  static void updateUser(int index, UserModel user) => _users[index] = user;
+  static Future<void> updateUser(int index, UserModel user) async {
+    _users[index] = user;
+    await _saveUsers();
+  }
 
-  static void removeUser(int index) => _users.removeAt(index);
+  static Future<void> removeUser(int index) async {
+    _users.removeAt(index);
+    await _saveUsers();
+  }
+
+  static Future<void> _saveUsers() async {
+    final preferences = await SharedPreferences.getInstance();
+    final saved = await preferences.setString(
+      _usersKey,
+      jsonEncode(_users.map((user) => user.toJson()).toList()),
+    );
+    if (!saved) throw StateError('Daftar user gagal disimpan.');
+  }
 
   static void addClass(String name) => kelas.add(name);
 

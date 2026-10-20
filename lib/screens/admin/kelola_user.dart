@@ -66,102 +66,16 @@ class _KelolaUserState extends State<KelolaUser> {
   }
 
   Future<void> _editUser({int? index, UserModel? user}) async {
-    final formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController(text: user?.name ?? '');
-    final usernameController = TextEditingController(
-      text: user?.username ?? '',
-    );
-    var role = user?.role ?? 'siswa';
-    var className =
-        user?.className ??
-        (AdminDataService.kelas.isEmpty ? null : AdminDataService.kelas.first);
-
     final result = await showDialog<UserModel>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(user == null ? 'Tambah User' : 'Ubah User'),
-          content: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Nama'),
-                    validator: (value) => value == null || value.trim().isEmpty
-                        ? 'Nama wajib diisi.'
-                        : null,
-                  ),
-                  TextFormField(
-                    controller: usernameController,
-                    decoration: const InputDecoration(labelText: 'Username'),
-                    validator: (value) => value == null || value.trim().isEmpty
-                        ? 'Username wajib diisi.'
-                        : null,
-                  ),
-                  DropdownButtonFormField<String>(
-                    initialValue: role,
-                    decoration: const InputDecoration(labelText: 'Role'),
-                    items: const [
-                      DropdownMenuItem(value: 'siswa', child: Text('Siswa')),
-                      DropdownMenuItem(value: 'guru', child: Text('Guru')),
-                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                    ],
-                    onChanged: (value) =>
-                        setDialogState(() => role = value ?? 'siswa'),
-                  ),
-                  if (role == 'siswa' && AdminDataService.kelas.isNotEmpty)
-                    DropdownButtonFormField<String>(
-                      initialValue: AdminDataService.kelas.contains(className)
-                          ? className
-                          : AdminDataService.kelas.first,
-                      decoration: const InputDecoration(labelText: 'Kelas'),
-                      items: AdminDataService.kelas
-                          .map(
-                            (name) => DropdownMenuItem(
-                              value: name,
-                              child: Text(name),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) => className = value,
-                    ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (!formKey.currentState!.validate()) return;
-                Navigator.pop(
-                  dialogContext,
-                  UserModel(
-                    name: nameController.text.trim(),
-                    username: usernameController.text.trim(),
-                    role: role,
-                    className: role == 'siswa' ? className : null,
-                  ),
-                );
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
-        ),
-      ),
+      builder: (_) => _UserFormDialog(user: user),
     );
-    nameController.dispose();
-    usernameController.dispose();
 
     if (result != null && mounted) {
       final duplicate = AdminDataService.users.indexed.any(
-        (entry) => entry.$2.username == result.username && entry.$1 != index,
+        (entry) =>
+            entry.$2.username.toLowerCase() == result.username.toLowerCase() &&
+            entry.$1 != index,
       );
       if (duplicate) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -169,13 +83,19 @@ class _KelolaUserState extends State<KelolaUser> {
         );
         return;
       }
-      setState(() {
+      try {
         if (index == null) {
-          AdminDataService.addUser(result);
+          await AdminDataService.addUser(result);
         } else {
-          AdminDataService.updateUser(index, result);
+          await AdminDataService.updateUser(index, result);
         }
-      });
+        if (mounted) setState(() {});
+      } catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('User gagal disimpan: $error')));
+      }
     }
   }
 
@@ -198,7 +118,15 @@ class _KelolaUserState extends State<KelolaUser> {
       ),
     );
     if (confirm == true && mounted) {
-      setState(() => AdminDataService.removeUser(index));
+      try {
+        await AdminDataService.removeUser(index);
+        if (mounted) setState(() {});
+      } catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('User gagal dihapus: $error')));
+      }
     }
   }
 
@@ -207,4 +135,115 @@ class _KelolaUserState extends State<KelolaUser> {
     'guru' => 'Guru',
     _ => 'Admin',
   };
+}
+
+class _UserFormDialog extends StatefulWidget {
+  const _UserFormDialog({this.user});
+
+  final UserModel? user;
+
+  @override
+  State<_UserFormDialog> createState() => _UserFormDialogState();
+}
+
+class _UserFormDialogState extends State<_UserFormDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _usernameController;
+  late String _role;
+  String? _className;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.user?.name ?? '');
+    _usernameController = TextEditingController(
+      text: widget.user?.username ?? '',
+    );
+    _role = widget.user?.role ?? 'siswa';
+    _className =
+        widget.user?.className ??
+        (AdminDataService.kelas.isEmpty ? null : AdminDataService.kelas.first);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _usernameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: Text(widget.user == null ? 'Tambah User' : 'Ubah User'),
+    content: Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Nama'),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? 'Nama wajib diisi.'
+                  : null,
+            ),
+            TextFormField(
+              controller: _usernameController,
+              decoration: const InputDecoration(labelText: 'Username'),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? 'Username wajib diisi.'
+                  : null,
+            ),
+            DropdownButtonFormField<String>(
+              initialValue: _role,
+              decoration: const InputDecoration(labelText: 'Role'),
+              items: const [
+                DropdownMenuItem(value: 'siswa', child: Text('Siswa')),
+                DropdownMenuItem(value: 'guru', child: Text('Guru')),
+                DropdownMenuItem(value: 'admin', child: Text('Admin')),
+              ],
+              onChanged: (value) => setState(() => _role = value ?? 'siswa'),
+            ),
+            if (_role == 'siswa' && AdminDataService.kelas.isNotEmpty)
+              DropdownButtonFormField<String>(
+                initialValue: AdminDataService.kelas.contains(_className)
+                    ? _className
+                    : AdminDataService.kelas.first,
+                decoration: const InputDecoration(labelText: 'Kelas'),
+                items: AdminDataService.kelas
+                    .map(
+                      (name) =>
+                          DropdownMenuItem(value: name, child: Text(name)),
+                    )
+                    .toList(),
+                onChanged: (value) => _className = value,
+              ),
+          ],
+        ),
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Batal'),
+      ),
+      FilledButton(
+        onPressed: () {
+          if (!_formKey.currentState!.validate()) return;
+          Navigator.pop(
+            context,
+            UserModel(
+              name: _nameController.text.trim(),
+              username: _usernameController.text.trim(),
+              role: _role,
+              className: _role == 'siswa' ? _className : null,
+            ),
+          );
+        },
+        child: const Text('Simpan'),
+      ),
+    ],
+  );
 }

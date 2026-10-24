@@ -23,6 +23,7 @@ class ValidasiJurnal extends StatefulWidget {
 
 class _ValidasiJurnalState extends State<ValidasiJurnal> {
   late final TextEditingController _commentController;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -99,7 +100,9 @@ class _ValidasiJurnalState extends State<ValidasiJurnal> {
                 Expanded(
                   child: OutlinedButton.icon(
                     key: const Key('reject-journal'),
-                    onPressed: () => _saveValidation('Ditolak'),
+                    onPressed: _isSaving
+                        ? null
+                        : () => _saveValidation('Ditolak'),
                     icon: const Icon(Icons.close),
                     label: const Text('Ditolak'),
                     style: OutlinedButton.styleFrom(
@@ -112,7 +115,9 @@ class _ValidasiJurnalState extends State<ValidasiJurnal> {
                 Expanded(
                   child: ElevatedButton.icon(
                     key: const Key('approve-journal'),
-                    onPressed: () => _saveValidation('Disetujui'),
+                    onPressed: _isSaving
+                        ? null
+                        : () => _saveValidation('Disetujui'),
                     icon: const Icon(Icons.check),
                     label: const Text('Disetujui'),
                     style: ElevatedButton.styleFrom(
@@ -214,12 +219,23 @@ class _ValidasiJurnalState extends State<ValidasiJurnal> {
     );
   }
 
-  void _saveValidation(String status) {
-    JurnalService.validasiJurnal(
-      index: widget.jurnalIndex,
-      status: status,
-      comment: _commentController.text.trim(),
-    );
-    Navigator.pop(context, true);
+  Future<void> _saveValidation(String status) async {
+    setState(() => _isSaving = true);
+    try {
+      await JurnalService.validasiJurnal(
+        index: widget.jurnalIndex,
+        status: status,
+        comment: _commentController.text.trim(),
+      );
+    } catch (error) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Jurnal gagal diperbarui: $error')),
+        );
+      }
+      return;
+    }
+    if (mounted) Navigator.pop(context, true);
   }
 }

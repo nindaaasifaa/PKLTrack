@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/jurnal_model.dart';
 import '../../services/admin_data_service.dart';
 import '../../services/jurnal_service.dart';
+import '../../services/nama_profil_siswa_service.dart';
 import '../../theme/app_theme.dart';
 
 class TambahJurnal extends StatefulWidget {
@@ -283,23 +284,34 @@ class _TambahJurnalState extends State<TambahJurnal> {
     if (!isValid) return;
 
     setState(() => _isSaving = true);
-    JurnalService.tambahJurnal(
-      JurnalModel(
-        date: _formatDate(_selectedDate!),
-        activity: _activityController.text.trim(),
-        status: 'Pending',
-        className: _selectedClass!,
-        imagePath: _selectedImage?.path,
-        imageBytes: _selectedImageBytes,
-      ),
-    );
+    try {
+      await JurnalService.tambahJurnal(
+        JurnalModel(
+          date: _formatDate(_selectedDate!),
+          activity: _activityController.text.trim(),
+          status: 'Pending',
+          studentName: NamaProfilSiswaService.nama.value,
+          className: _selectedClass!,
+          imagePath: _selectedImage?.path,
+          imageBytes: _selectedImageBytes,
+        ),
+      );
+    } catch (error) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Jurnal gagal disimpan: $error')),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Jurnal berhasil disimpan')));
     await Future<void>.delayed(const Duration(milliseconds: 900));
-    if (mounted) {
-      Navigator.pop(context, true);
-    }
+    if (mounted) Navigator.pop(context, true);
   }
 
   String _formatDate(DateTime date) =>

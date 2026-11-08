@@ -5,6 +5,7 @@ import '../../models/user_model.dart';
 import '../../services/foto_profil_admin_service.dart';
 import '../../services/nama_profil_akun_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/profile_widgets.dart';
 
 class ProfilAdmin extends StatelessWidget {
   const ProfilAdmin({required this.user, super.key});
@@ -20,122 +21,47 @@ class ProfilAdmin extends StatelessWidget {
       foregroundColor: AppTheme.onPrimary,
     ),
     body: ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       children: [
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryContainer,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.outline),
-          ),
-          child: Row(
-            children: [
-              _buildPhotoAvatar(context),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'PROFIL ADMIN',
-                      style: TextStyle(
-                        color: AppTheme.muted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ValueListenableBuilder<String>(
-                            valueListenable:
-                                NamaProfilAkunService.untukRole(user.role),
-                            builder: (context, name, _) => Text(
-                              name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppTheme.onSurface,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: 'Ubah nama',
-                          onPressed: () => _editName(context),
-                          icon: const Icon(Icons.edit_outlined),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      'Admin / Staf TIK',
-                      style: TextStyle(color: AppTheme.muted),
-                    ),
-                  ],
+        ProfileHeader(
+          name: NamaProfilAkunService.untukRole(user.role),
+          role: 'Admin / Staf TIK',
+          avatar: _buildPhotoAvatar(context),
+          onEditName: () => _editName(context),
+        ),
+        const SizedBox(height: 26),
+        const ProfileSectionTitle(
+          title: 'Informasi akun',
+          subtitle: 'Username dan peran yang Anda gunakan',
+        ),
+        const SizedBox(height: 12),
+        ProfileInfoCard(
+          children: [
+            ValueListenableBuilder<String>(
+              valueListenable: NamaProfilAkunService.usernameUntukRole(
+                user.role,
+              ),
+              builder: (context, username, _) => ProfileInfoRow(
+                icon: Icons.alternate_email,
+                label: 'Username',
+                value: username,
+                trailing: IconButton(
+                  tooltip: 'Ubah username',
+                  onPressed: () => _editUsername(context),
+                  icon: const Icon(Icons.edit_outlined),
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        const Text(
-          'Informasi Akun',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: AppTheme.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.outline),
-          ),
-          child: Column(
-            children: [
-              ValueListenableBuilder<String>(
-                valueListenable:
-                    NamaProfilAkunService.usernameUntukRole(user.role),
-                builder: (context, username, _) => _ProfileInfo(
-                  icon: Icons.alternate_email,
-                  label: 'Username',
-                  value: username,
-                  trailing: IconButton(
-                    tooltip: 'Ubah username',
-                    onPressed: () => _editUsername(context),
-                    icon: const Icon(Icons.edit_outlined),
-                  ),
-                ),
-              ),
-              const Divider(height: 1),
-              const _ProfileInfo(
-                icon: Icons.admin_panel_settings_outlined,
-                label: 'Role',
-                value: 'Admin / Staf TIK',
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 52,
-          child: OutlinedButton.icon(
-            onPressed: () => konfirmasiLogout(context),
-            icon: const Icon(Icons.logout),
-            label: const Text('Logout'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red.shade700,
-              side: BorderSide(color: Colors.red.shade300),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
               ),
             ),
-          ),
+            const Divider(height: 1),
+            const ProfileInfoRow(
+              icon: Icons.admin_panel_settings_outlined,
+              label: 'Peran',
+              value: 'Admin / Staf TIK',
+            ),
+          ],
         ),
+        const SizedBox(height: 28),
+        ProfileLogoutButton(onPressed: () => konfirmasiLogout(context)),
       ],
     ),
   );
@@ -190,7 +116,9 @@ class ProfilAdmin extends StatelessWidget {
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Nama gagal disimpan. Silakan coba lagi.')),
+          const SnackBar(
+            content: Text('Nama gagal disimpan. Silakan coba lagi.'),
+          ),
         );
       }
     }
@@ -347,40 +275,4 @@ class ProfilAdmin extends StatelessWidget {
       Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     }
   }
-}
-
-class _ProfileInfo extends StatelessWidget {
-  const _ProfileInfo({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.trailing,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 15),
-    child: Row(
-      children: [
-        Icon(icon, size: 20, color: AppTheme.accent),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(label, style: const TextStyle(color: AppTheme.muted)),
-        ),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.end,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-        if (trailing != null) trailing!,
-      ],
-    ),
-  );
 }

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../models/user_model.dart';
+import '../../services/akun_lokal_service.dart';
 import '../../services/nama_profil_akun_service.dart';
 import '../../services/nama_profil_siswa_service.dart';
 import '../../theme/app_theme.dart';
 import '../admin/dashboard_admin.dart';
 import '../guru/dashboard_guru.dart';
 import '../siswa/dashboard_siswa.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -44,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void login() {
+  Future<void> login() async {
     final username = usernameController.text.trim();
     final password = passwordController.text;
 
@@ -55,7 +57,43 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final account = _accountForUsername(username);
+    final demoAccount = _accountForUsername(username);
+    UserModel? registeredUser;
+    if (demoAccount == null) {
+      try {
+        registeredUser = await AkunLokalService.autentikasi(
+          username: username,
+          password: password,
+        );
+      } on FormatException catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.message)));
+        return;
+      } on StateError catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.message)));
+        return;
+      }
+    }
+    if (!mounted) return;
+
+    if (registeredUser != null) {
+      switch (registeredUser.role) {
+        case 'siswa':
+          NamaProfilSiswaService.nama.value = registeredUser.name;
+        case 'guru':
+        case 'admin':
+          NamaProfilAkunService.untukRole(registeredUser.role).value =
+              registeredUser.name;
+      }
+    }
+    final account =
+        demoAccount ??
+        (registeredUser == null
+            ? null
+            : _DemoAccount(password: password, user: registeredUser));
     if (account == null || password != account.password) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Username atau password salah')),
@@ -77,6 +115,23 @@ class _LoginScreenState extends State<LoginScreen> {
       context,
       MaterialPageRoute<void>(builder: (_) => dashboard),
     );
+  }
+
+  Future<void> _openRegister() async {
+    final username = await Navigator.push<String>(
+      context,
+      MaterialPageRoute<String>(builder: (_) => const RegisterScreen()),
+    );
+    if (username != null && mounted) {
+      usernameController.text = username;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Pendaftaran berhasil. Silakan masuk dengan akun baru.',
+          ),
+        ),
+      );
+    }
   }
 
   _DemoAccount? _accountForUsername(String username) {
@@ -221,6 +276,28 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: _openRegister,
+                      icon: const Icon(Icons.person_add_alt_1_outlined),
+                      label: const Text(
+                        'Belum punya akun? Daftar di sini',
+                        textAlign: TextAlign.center,
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.accent,
+                        side: const BorderSide(color: AppTheme.outline),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),

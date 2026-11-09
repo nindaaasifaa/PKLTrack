@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:crypto/crypto.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user_model.dart';
@@ -61,7 +61,7 @@ class AkunLokalService {
     }
 
     final salt = _newSalt();
-    final passwordHash = _hashPassword(password, salt);
+    final passwordHash = await _hashPassword(password, salt);
 
     accounts.add(
       _LocalAccount(
@@ -87,7 +87,7 @@ class AkunLokalService {
     for (final account in accounts) {
       if (account.user.username.toLowerCase() ==
               username.trim().toLowerCase() &&
-          _matchesPassword(
+          await _matchesPassword(
             password,
             account.passwordSalt,
             account.passwordHash,
@@ -106,30 +106,30 @@ class AkunLokalService {
     return List<int>.generate(16, (_) => random.nextInt(256));
   }
 
-  static List<int> _hashPassword(String password, List<int> salt) {
-    final passwordBytes = utf8.encode(password);
-    final hmac = Hmac(sha256, passwordBytes);
-    final firstBlock = hmac.convert([...salt, 0, 0, 0, 1]).bytes;
-    final result = List<int>.from(firstBlock);
-    var currentBlock = firstBlock;
-
-    for (var iteration = 1; iteration < _hashIterations; iteration++) {
-      currentBlock = hmac.convert(currentBlock).bytes;
-      for (var index = 0; index < result.length; index++) {
-        result[index] ^= currentBlock[index];
-      }
-    }
-    return result;
+  static Future<List<int>> _hashPassword(
+    String password,
+    List<int> salt,
+  ) async {
+    final derivation = Pbkdf2(
+      macAlgorithm: Hmac.sha256(),
+      iterations: _hashIterations,
+      bits: 256,
+    );
+    final key = await derivation.deriveKey(
+      secretKey: SecretKey(utf8.encode(password)),
+      nonce: salt,
+    );
+    return key.extractBytes();
   }
 
-  static bool _matchesPassword(
+  static Future<bool> _matchesPassword(
     String password,
     String encodedSalt,
     String encodedHash,
-  ) {
+  ) async {
     final salt = base64Decode(encodedSalt);
     final expectedHash = base64Decode(encodedHash);
-    final actualHash = _hashPassword(password, salt);
+    final actualHash = await _hashPassword(password, salt);
     if (actualHash.length != expectedHash.length) return false;
 
     var difference = 0;
@@ -150,48 +150,50 @@ class AkunLokalService {
       throw const FormatException('Data akun lokal tidak valid.');
     }
     var migratedLegacyAccounts = false;
-    final accounts = decoded.map((entry) {
-      if (entry is! Map<String, dynamic>) {
-        throw const FormatException('Data akun lokal tidak valid.');
-      }
-      final name = entry['name'];
-      final username = entry['username'];
-      final role = entry['role'];
-      final email = entry['email'];
-      final passwordSalt = entry['passwordSalt'];
-      final passwordHash = entry['passwordHash'];
-      final legacyPassword = entry['password'];
-      if (name is! String || username is! String || role is! String) {
-        throw const FormatException('Data akun lokal tidak valid.');
-      }
-      if (!_accountRoles.contains(role)) {
-        throw const FormatException(
-          'Data akun lokal memiliki role tidak valid.',
-        );
-      }
-      if (email != null && email is! String) {
-        throw const FormatException('Data email akun lokal tidak valid.');
-      }
+    final accounts = await Future.wait(
+      decoded.map((entry) async {
+        if (entry is! Map<String, dynamic>) {
+          throw const FormatException('Data akun lokal tidak valid.');
+        }
+        final name = entry['name'];
+        final username = entry['username'];
+        final role = entry['role'];
+        final email = entry['email'];
+        final passwordSalt = entry['passwordSalt'];
+        final passwordHash = entry['passwordHash'];
+        final legacyPassword = entry['password'];
+        if (name is! String || username is! String || role is! String) {
+          throw const FormatException('Data akun lokal tidak valid.');
+        }
+        if (!_accountRoles.contains(role)) {
+          throw const FormatException(
+            'Data akun lokal memiliki role tidak valid.',
+          );
+        }
+        if (email != null && email is! String) {
+          throw const FormatException('Data email akun lokal tidak valid.');
+        }
 
-      final List<int> salt;
-      final List<int> hash;
-      if (passwordSalt is String && passwordHash is String) {
-        salt = base64Decode(passwordSalt);
-        hash = base64Decode(passwordHash);
-      } else if (legacyPassword is String) {
-        salt = _newSalt();
-        hash = _hashPassword(legacyPassword, salt);
-        migratedLegacyAccounts = true;
-      } else {
-        throw const FormatException('Password akun lokal tidak valid.');
-      }
-      return _LocalAccount(
-        user: UserModel(name: name, username: username, role: role),
-        email: (email as String? ?? '').toLowerCase(),
-        passwordSalt: base64Encode(salt),
-        passwordHash: base64Encode(hash),
-      );
-    }).toList();
+        final List<int> salt;
+        final List<int> hash;
+        if (passwordSalt is String && passwordHash is String) {
+          salt = base64Decode(passwordSalt);
+          hash = base64Decode(passwordHash);
+        } else if (legacyPassword is String) {
+          salt = _newSalt();
+          hash = await _hashPassword(legacyPassword, salt);
+          migratedLegacyAccounts = true;
+        } else {
+          throw const FormatException('Password akun lokal tidak valid.');
+        }
+        return _LocalAccount(
+          user: UserModel(name: name, username: username, role: role),
+          email: (email as String? ?? '').toLowerCase(),
+          passwordSalt: base64Encode(salt),
+          passwordHash: base64Encode(hash),
+        );
+      }),
+    );
     if (migratedLegacyAccounts) {
       await _saveAccounts(preferences, accounts);
     }

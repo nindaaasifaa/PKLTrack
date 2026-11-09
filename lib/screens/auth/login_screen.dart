@@ -38,6 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool isPasswordVisible = false;
+  bool _isLoggingIn = false;
 
   @override
   void dispose() {
@@ -57,25 +58,26 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    setState(() => _isLoggingIn = true);
     final demoAccount = _accountForUsername(username);
     UserModel? registeredUser;
-    if (demoAccount == null) {
-      try {
+    try {
+      if (demoAccount == null) {
         registeredUser = await AkunLokalService.autentikasi(
           username: username,
           password: password,
         );
-      } on FormatException catch (error) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error.message)));
-        return;
-      } on StateError catch (error) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error.message)));
-        return;
       }
+    } on FormatException catch (error) {
+      if (!mounted) return;
+      _showLoginError(error.message);
+      return;
+    } on StateError catch (error) {
+      if (!mounted) return;
+      _showLoginError(error.message);
+      return;
+    } finally {
+      if (mounted) setState(() => _isLoggingIn = false);
     }
     if (!mounted) return;
 
@@ -115,6 +117,11 @@ class _LoginScreenState extends State<LoginScreen> {
       context,
       MaterialPageRoute<void>(builder: (_) => dashboard),
     );
+  }
+
+  void _showLoginError(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _openRegister() async {
@@ -263,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: login,
+                      onPressed: _isLoggingIn ? null : login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: AppTheme.onPrimary,
@@ -271,13 +278,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        'LOGIN',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _isLoggingIn
+                          ? const SizedBox.square(
+                              dimension: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text(
+                              'LOGIN',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
 
